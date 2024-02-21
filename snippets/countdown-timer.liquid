@@ -1,0 +1,31 @@
+<div class="timer">
+  {% if title != blank -%}
+    <h4 class="timer__title">{{ title }}</h4>
+  {% else %}
+    <h4 class="timer__title">
+      Order by 11:30 for
+      <strong>same day shipping</strong>
+      <span class="small">(next working day on Saturday/Sunday)</span>
+    </h4>
+  {%- endif %}
+
+  <div class="timer-display">
+    <div class="timer-block">
+      <span class="timer-block__num js-timer-hours">00</span>
+
+      <span class="timer-block__unit">Hours</span>
+    </div>
+
+    <div class="timer-block">
+      <span class="timer-block__num js-timer-minutes">00</span>
+
+      <span class="timer-block__unit">Minutes</span>
+    </div>
+
+    <div class="timer-block">
+      <span class="timer-block__num js-timer-seconds">00</span>
+
+      <span class="timer-block__unit">Seconds</span>
+    </div>
+  </div>
+</div>

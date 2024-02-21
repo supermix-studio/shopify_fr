@@ -1,0 +1,56 @@
+<style>
+  .custom-author-container {
+    margin: 60px 0 0;
+  }
+  .custom-author-title {
+    font-weight: 700;
+    text-transform: none;
+  }
+  .custom-author-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    /*margin-bottom: 15px;*/
+    font-size: 14px;
+  }
+  .custom-author-content img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-right: 25px;
+  }
+  .custom-author-content p {
+    margin: 0;
+    text-align: justify;
+  }
+
+  @media screen and (max-width: 641px) {
+    .custom-author-container hr {
+      margin-bottom: 15px;
+    }
+    .custom-author-content {
+      display: block;
+    }
+    .custom-author-content img {
+      float: left;
+      margin: 6px 16px 8px 0;
+      width: 85px;
+      height: 85px;
+    }
+  }
+</style>
+
+
+
+{% if article.author contains 'Fine Mayer' %}
+  <div class="custom-author-container">
+    <div>
+      <h3 class="custom-author-title">About the author</h3>
+      <hr>
+    </div>
+    <div class="custom-author-content">
+      <img src="https://cdn.shopify.com/s/files/1/2530/6030/files/fine_kavatar_v2.png?v=1670858893" alt="Fine Mayer">
+      <p>Fine is an ardent animal lover and particularly enjoys the company of her three guinea pigs, Tiberius, Ziri, and Henry. With more than 15 years of pigsperience, she knows the ins and outs of guinea pig care. Today, Fine lives in Glasgow, Scotland, with her three pigs and three noisy birds.</p>
+    </div>
+  </div>
+{% endif %}

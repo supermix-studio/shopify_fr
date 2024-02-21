@@ -1,0 +1,1201 @@
+{%- assign mega_menus = section.blocks | map: 'settings' | map: 'menu_item' -%}
+
+<div id="mobile-menu" class="mobile-menu" aria-hidden="true">
+  {%- render 'icon', icon: 'nav-triangle-borderless' -%}
+
+  <div class="mobile-menu__inner">
+    <div class="mobile-menu__panel">
+      <div class="mobile-menu__section">
+        <ul class="mobile-menu__nav" data-type="menu" role="list">
+          {%- for link in menu.links -%}
+            <li class="mobile-menu__nav-item">
+              {%- if link.links != blank -%}
+                {%- capture panel_id -%}mobile-panel-{{ forloop.index0 }}{%- endcapture -%}
+
+                <button class="mobile-menu__nav-link" data-type="menuitem" aria-haspopup="true" aria-expanded="false" aria-controls="{{ panel_id }}" data-action="open-panel">
+                  <span class="nav-icon-wrapper">
+                    {% if link.title == 'Boutique pour cochons d’Inde' %}
+                      <span class="nav-icon">{%- render 'icon-nav-piggies' -%}</span>
+                    {% elsif link.title == 'Boutique pour lapins' %}
+                      <span class="nav-icon">{%- render 'icon-nav-bunnies' -%}</span>
+                    {% elsif link.title == 'Ressources gratuites' %}
+                      <span class="nav-icon">{%- render 'icon-nav-resources' -%}</span>
+                    {% elsif link.title == 'Rencontrez l’éKipe !' %}
+                      <span class="nav-icon">{%- render 'icon-nav-krew' -%}</span>
+                    {% elsif link.title == 'Noël' %}
+                      <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                    {% elsif link.title == 'SOLDES' %}
+                      <span class="nav-icon">{%- render 'icon-nav-sale' -%}</span>
+                    {% endif %}
+                    <span>{{- link.title -}}</span>
+                  </span>
+                  {%- render 'icon', icon: 'arrow-right' -%}
+                </button>
+              {%- else -%}
+                <a href="{{ link.url }}" class="mobile-menu__nav-link" data-type="menuitem">
+                  <span class="nav-icon-wrapper">
+                    {% if link.title == 'Home' %}
+                      <span class="nav-icon">{%- render 'icon-nav-home' -%}</span>
+                    {% elsif link.title == 'Blog' %}
+                      <span class="nav-icon">{%- render 'icon-nav-care' -%}</span>
+                    {% elsif link.title == 'Refuge Kavee' %}
+                      <span class="nav-icon">{%- render 'icon-nav-rescue' -%}</span>
+                    {% elsif link.title == 'SOLDES' %}
+                      <span class="nav-icon">{%- render 'icon-nav-sale' -%}</span>
+                    {% endif %}
+                    <span>{{ link.title }}</span>
+                  </span>
+                </a>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+
+      {%- if section.settings.navigation_phone_number != blank or section.settings.navigation_email != blank -%}
+        <div class="mobile-menu__section mobile-menu__section--loose">
+          <p class="mobile-menu__section-title heading h5">{{ 'header.navigation.need_help' | t }}</p>
+
+          {%- if section.settings.navigation_phone_number != blank -%}
+            <div class="mobile-menu__help-wrapper">
+              {%- render 'icon', icon: 'bi-phone' -%}
+              <span>{{ section.settings.navigation_phone_number | escape }}</span>
+            </div>
+          {%- endif -%}
+
+          {%- if section.settings.navigation_email != blank -%}
+            <div class="mobile-menu__help-wrapper">
+              {%- render 'icon', icon: 'bi-email' -%}
+              <a href="mailto:{{ section.settings.navigation_email }}">{{ section.settings.navigation_email | escape }}</a>
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- capture social_media -%}{% render 'social-media', show_social_media_name: true %}{%- endcapture -%}
+
+      {%- if section.settings.show_navigation_social_media and social_media != blank -%}
+        <div class="mobile-menu__section mobile-menu__section--loose">
+          <p class="mobile-menu__section-title heading h5">{{ 'header.navigation.follow_us' | t }}</p>
+
+          {{- social_media -}}
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%}We now need to loop again (for the second level) to create the nested panel{%- endcomment -%}
+
+    {%- for link in menu.links -%}
+      {%- if link.links != blank -%}
+        {%- capture panel_id -%}mobile-panel-{{ forloop.index0 }}{%- endcapture -%}
+
+        <div id="{{ panel_id }}" class="mobile-menu__panel is-nested">
+          <div class="mobile-menu__section is-sticky">
+            <button class="mobile-menu__back-button" data-action="close-panel">{% render 'icon', icon: 'arrow-left' %} {{ 'header.navigation.back' | t }}</button>
+          </div>
+
+          <div class="mobile-menu__section">
+            {%- assign is_mega_menu = false -%}
+            {%- assign mega_menu_type = 'old' -%}
+            {%- assign downcase_title = link.title | downcase | strip -%}
+
+            {%- for mega_menu in mega_menus -%}
+              {%- assign mega_menu_setting_downcase = mega_menu | downcase | strip -%}
+
+              {%- if mega_menu_setting_downcase == downcase_title -%}
+                {%- assign is_mega_menu = true -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+
+            {%- if is_mega_menu -%}
+
+              {%- assign mega_menu_block = nil -%}
+  
+              {%- for block in section.blocks -%}
+                {%- assign downcase_block_menu_item = block.settings.menu_item | downcase | strip -%}
+
+                {%- if downcase_block_menu_item == downcase_title -%}
+                  {%- assign mega_menu_block = block -%}
+                  {%- assign mega_menu_type = block.type -%}
+                  {%- break -%}
+                {%- endif -%}
+              {%- endfor -%}
+         
+              {% if mega_menu_type == 'old' %}
+                <div class="mobile-menu__nav-list">
+                  {%- for sub_link in link.links -%}
+                    {%- capture mobile_list_id -%}mobile-list-{% increment mobile_list %}{%- endcapture -%}
+  
+                    <div class="mobile-menu__nav-list-item">
+                      {%- if sub_link.levels == 0 -%}
+                        <a href="{{ sub_link.url }}" class="mobile-menu__nav-list-toggle text--strong">{{ sub_link.title }}</a>
+                      {%- else -%}
+                        <button class="mobile-menu__nav-list-toggle text--strong" aria-controls="{{ mobile_list_id }}" aria-expanded="false" data-action="toggle-collapsible" data-close-siblings="false">
+                          {{- sub_link.title -}} {% render 'icon', icon: 'arrow-bottom' %}
+                        </button>
+  
+                        <div id="{{ mobile_list_id }}" class="mobile-menu__nav-collapsible">
+                          <div class="mobile-menu__nav-collapsible-content">
+                            <ul class="mobile-menu__nav" data-type="menu" role="list">
+                              {%- for sub_sub_link in sub_link.links -%}
+                                <li class="mobile-menu__nav-item">
+                                  <a href="{{ sub_sub_link.url }}" class="mobile-menu__nav-link" data-type="menuitem">{{ sub_sub_link.title }}</a>
+                                </li>
+                              {%- endfor -%}
+                            </ul>
+                          </div>
+                        </div>
+                      {%- endif -%}
+                    </div>
+                  {%- endfor -%}
+                </div>
+  
+                {%- assign promo_count = 0 -%}
+  
+                {%- capture promo_blocks -%}
+                  {%- if mega_menu_block.settings.image_1 != blank -%}
+                    {% assign promo_count = promo_count | plus: 1 %}
+  
+                    <div class="mobile-menu__promo-item">
+                      <a href="{{ mega_menu_block.settings.image_1_link | default: '#' }}" class="mobile-menu__promo">
+                        <div class="mobile-menu__image-wrapper">
+                          <div class="aspect-ratio" style="padding-bottom: {{ 100.0 | divided_by: mega_menu_block.settings.image_1.aspect_ratio }}%">
+                            <img class="lazyload image--fade-in" data-src="{{ mega_menu_block.settings.image_1 | img_url: '550x' }}" alt="{{ mega_menu_block.settings.image_1.alt | escape }}">
+                          </div>
+                        </div>
+  
+                        <span class="mobile-menu__image-heading heading">{{ mega_menu_block.settings.image_1_heading | escape }}</span>
+                        <p class="mobile-menu__image-text">{{ mega_menu_block.settings.image_1_text | escape }}</p>
+                      </a>
+                    </div>
+                  {%- endif -%}
+  
+                  {%- if mega_menu_block.settings.image_2 != blank -%}
+                    {% assign promo_count = promo_count | plus: 1 %}
+  
+                    <div class="mobile-menu__promo-item">
+                      <a href="{{ mega_menu_block.settings.image_2_link | default: '#' }}" class="mobile-menu__promo">
+                        <div class="mobile-menu__image-wrapper">
+                          <div class="aspect-ratio" style="padding-bottom: {{ 100.0 | divided_by: mega_menu_block.settings.image_2.aspect_ratio }}%">
+                            <img class="lazyload image--fade-in" data-src="{{ mega_menu_block.settings.image_2 | img_url: '550x' }}" alt="{{ mega_menu_block.settings.image_2.alt | escape }}">
+                          </div>
+                        </div>
+  
+                        <span class="mobile-menu__image-heading heading">{{ mega_menu_block.settings.image_2_heading | escape }}</span>
+                        <p class="mobile-menu__image-text">{{ mega_menu_block.settings.image_2_text | escape }}</p>
+                      </a>
+                    </div>
+                  {%- endif -%}
+                {%- endcapture -%}
+  
+                {%- if promo_blocks != blank -%}
+                  {%- if promo_count == 1 -%}
+                    {{- promo_blocks -}}
+                  {%- else -%}
+                    <div class="scroller">
+                      <div class="scroller__inner">
+                        <div class="mobile-menu__promo-list">
+                          {{- promo_blocks -}}
+                        </div>
+                      </div>
+                    </div>
+                  {%- endif -%}
+                {%- endif -%}
+              {% elsif mega_menu_type == 'new_mega_menu' %}
+
+                <div class="mobile-menu__nav-list">
+                  {%- if mega_menu_block.settings.menu_featured_image_mobile != blank -%}
+                    <div class="mobile-menu__featured-image">
+                      {{ mega_menu_block.settings.menu_featured_image_mobile | image_url: width: 1000 | image_tag: widths: '250, 320, 420, 440, 520, 640, 840, 1040', sizes: '(max-width: 320px) 250px,(max-width: 520px) 320px,(max-width: 620px) 420px,(max-width: 720px) 520px,(max-width: 820px) 420px,(max-width: 1120px) 520px,(max-width: 1220px) 420px, 320px' }}
+                    </div>          
+                  {%- endif -%}
+
+                  {%- if mega_menu_block.settings.image_1_heading != blank -%}
+                    <div class="mobile-menu__nav-list-item">
+                      <a href="{{ mega_menu_block.settings.image_1_link | default: '#' }}" class="mobile-menu__nav-list-toggle text--strong mobile-menu__nav-list-mega">
+                        {%- if mega_menu_block.settings.image_1_svg == 'piggies_t_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_t_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'piggies_b_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_b_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'piggies_w_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'piggies_c_supplies' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_supplies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'piggies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'piggies_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'piggies_w_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'piggies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'piggies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'piggies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'piggies_grooming' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_grooming' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'bunnies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'bunnies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'bunnies_f_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'bunnies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'bunnies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'care_piggies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_piggies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'care_bunnies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_bunnies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'resource_vets' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_vets' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'resource_boarding' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_boarding' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'resource_rescue_list' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_rescue_list' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'resource_care_sheet' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_care_sheet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'resource_games' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_games' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'resource_videos' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_videos' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'krew_meet' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_meet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'krew_story' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_story' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'krew_about' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_about' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_kart' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'winter_wonderland' -%}
+                          <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == 'cheery_christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_sack' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == '20_under' -%}
+                          <span class="nav-icon">{%- render 'icon-20_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == '50_under' -%}
+                          <span class="nav-icon">{%- render 'icon-50_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == '100_under' -%}
+                          <span class="nav-icon">{%- render 'icon-100_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_1_svg == '100_over' -%}
+                          <span class="nav-icon">{%- render 'icon-100_over' -%}</span>
+                        {%- endif -%}
+                        <span>{{ mega_menu_block.settings.image_1_heading }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if mega_menu_block.settings.image_2_heading != blank -%}
+                    <div class="mobile-menu__nav-list-item">
+                      <a href="{{ mega_menu_block.settings.image_2_link | default: '#' }}" class="mobile-menu__nav-list-toggle text--strong mobile-menu__nav-list-mega">
+                        {%- if mega_menu_block.settings.image_2_svg == 'piggies_t_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_t_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'piggies_b_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_b_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'piggies_w_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'piggies_c_supplies' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_supplies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'piggies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'piggies_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'piggies_w_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'piggies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'piggies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'piggies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'piggies_grooming' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_grooming' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'bunnies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'bunnies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'bunnies_f_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'bunnies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'bunnies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'care_piggies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_piggies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'care_bunnies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_bunnies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'resource_vets' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_vets' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'resource_boarding' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_boarding' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'resource_rescue_list' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_rescue_list' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'resource_care_sheet' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_care_sheet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'resource_games' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_games' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'resource_videos' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_videos' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'krew_meet' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_meet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'krew_story' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_story' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'krew_about' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_about' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_kart' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'winter_wonderland' -%}
+                          <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == 'cheery_christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_sack' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == '20_under' -%}
+                          <span class="nav-icon">{%- render 'icon-20_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == '50_under' -%}
+                          <span class="nav-icon">{%- render 'icon-50_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == '100_under' -%}
+                          <span class="nav-icon">{%- render 'icon-100_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_2_svg == '100_over' -%}
+                          <span class="nav-icon">{%- render 'icon-100_over' -%}</span>
+                        {%- endif -%}
+                        <span>{{ mega_menu_block.settings.image_2_heading }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if mega_menu_block.settings.image_3_heading != blank -%}
+                    <div class="mobile-menu__nav-list-item">
+                      <a href="{{ mega_menu_block.settings.image_3_link | default: '#' }}" class="mobile-menu__nav-list-toggle text--strong mobile-menu__nav-list-mega">
+                        {%- if mega_menu_block.settings.image_3_svg == 'piggies_t_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_t_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'piggies_b_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_b_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'piggies_w_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'piggies_c_supplies' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_supplies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'piggies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'piggies_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'piggies_w_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'piggies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'piggies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'piggies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'piggies_grooming' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_grooming' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'bunnies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'bunnies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'bunnies_f_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'bunnies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'bunnies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'care_piggies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_piggies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'care_bunnies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_bunnies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'resource_vets' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_vets' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'resource_boarding' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_boarding' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'resource_rescue_list' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_rescue_list' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'resource_care_sheet' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_care_sheet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'resource_games' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_games' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'resource_videos' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_videos' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'krew_meet' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_meet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'krew_story' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_story' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'krew_about' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_about' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_kart' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'winter_wonderland' -%}
+                          <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == 'cheery_christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_sack' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == '20_under' -%}
+                          <span class="nav-icon">{%- render 'icon-20_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == '50_under' -%}
+                          <span class="nav-icon">{%- render 'icon-50_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == '100_under' -%}
+                          <span class="nav-icon">{%- render 'icon-100_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_3_svg == '100_over' -%}
+                          <span class="nav-icon">{%- render 'icon-100_over' -%}</span>
+                        {%- endif -%}
+                        <span>{{ mega_menu_block.settings.image_3_heading }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if mega_menu_block.settings.image_4_heading != blank -%}
+                    <div class="mobile-menu__nav-list-item">
+                      <a href="{{ mega_menu_block.settings.image_4_link | default: '#' }}" class="mobile-menu__nav-list-toggle text--strong mobile-menu__nav-list-mega">
+                        {%- if mega_menu_block.settings.image_4_svg == 'piggies_t_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_t_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'piggies_b_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_b_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'piggies_w_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'piggies_c_supplies' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_supplies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'piggies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'piggies_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'piggies_w_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'piggies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'piggies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'piggies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'piggies_grooming' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_grooming' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'bunnies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'bunnies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'bunnies_f_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'bunnies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'bunnies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'care_piggies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_piggies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'care_bunnies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_bunnies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'resource_vets' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_vets' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'resource_boarding' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_boarding' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'resource_rescue_list' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_rescue_list' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'resource_care_sheet' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_care_sheet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'resource_games' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_games' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'resource_videos' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_videos' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'krew_meet' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_meet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'krew_story' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_story' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'krew_about' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_about' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_kart' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'winter_wonderland' -%}
+                          <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == 'cheery_christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_sack' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == '20_under' -%}
+                          <span class="nav-icon">{%- render 'icon-20_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == '50_under' -%}
+                          <span class="nav-icon">{%- render 'icon-50_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == '100_under' -%}
+                          <span class="nav-icon">{%- render 'icon-100_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_4_svg == '100_over' -%}
+                          <span class="nav-icon">{%- render 'icon-100_over' -%}</span>
+                        {%- endif -%}
+                        <span>{{ mega_menu_block.settings.image_4_heading }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if mega_menu_block.settings.image_5_heading != blank -%}
+                    <div class="mobile-menu__nav-list-item">
+                      <a href="{{ mega_menu_block.settings.image_5_link | default: '#' }}" class="mobile-menu__nav-list-toggle text--strong mobile-menu__nav-list-mega">
+                        {%- if mega_menu_block.settings.image_5_svg == 'piggies_t_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_t_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'piggies_b_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_b_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'piggies_w_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'piggies_c_supplies' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_supplies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'piggies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'piggies_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'piggies_w_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'piggies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'piggies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'piggies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'piggies_grooming' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_grooming' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'bunnies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'bunnies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'bunnies_f_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'bunnies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'bunnies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'care_piggies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_piggies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'care_bunnies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_bunnies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'resource_vets' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_vets' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'resource_boarding' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_boarding' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'resource_rescue_list' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_rescue_list' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'resource_care_sheet' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_care_sheet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'resource_games' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_games' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'resource_videos' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_videos' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'krew_meet' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_meet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'krew_story' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_story' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'krew_about' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_about' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_kart' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'winter_wonderland' -%}
+                          <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == 'cheery_christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_sack' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == '20_under' -%}
+                          <span class="nav-icon">{%- render 'icon-20_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == '50_under' -%}
+                          <span class="nav-icon">{%- render 'icon-50_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == '100_under' -%}
+                          <span class="nav-icon">{%- render 'icon-100_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_5_svg == '100_over' -%}
+                          <span class="nav-icon">{%- render 'icon-100_over' -%}</span>
+                        {%- endif -%}
+                        <span>{{ mega_menu_block.settings.image_5_heading }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if mega_menu_block.settings.image_6_heading != blank -%}
+                    <div class="mobile-menu__nav-list-item">
+                      <a href="{{ mega_menu_block.settings.image_6_link | default: '#' }}" class="mobile-menu__nav-list-toggle text--strong mobile-menu__nav-list-mega">
+                        {%- if mega_menu_block.settings.image_6_svg == 'piggies_t_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_t_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'piggies_b_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_b_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'piggies_w_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'piggies_c_supplies' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_supplies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'piggies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'piggies_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'piggies_w_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'piggies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'piggies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'piggies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'piggies_grooming' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_grooming' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'bunnies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'bunnies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'bunnies_f_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'bunnies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'bunnies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'care_piggies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_piggies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'care_bunnies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_bunnies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'resource_vets' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_vets' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'resource_boarding' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_boarding' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'resource_rescue_list' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_rescue_list' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'resource_care_sheet' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_care_sheet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'resource_games' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_games' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'resource_videos' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_videos' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'krew_meet' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_meet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'krew_story' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_story' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'krew_about' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_about' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_kart' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'winter_wonderland' -%}
+                          <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == 'cheery_christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_sack' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == '20_under' -%}
+                          <span class="nav-icon">{%- render 'icon-20_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == '50_under' -%}
+                          <span class="nav-icon">{%- render 'icon-50_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == '100_under' -%}
+                          <span class="nav-icon">{%- render 'icon-100_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_6_svg == '100_over' -%}
+                          <span class="nav-icon">{%- render 'icon-100_over' -%}</span>
+                        {%- endif -%}
+                        <span>{{ mega_menu_block.settings.image_6_heading }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if mega_menu_block.settings.image_7_heading != blank -%}
+                    <div class="mobile-menu__nav-list-item">
+                      <a href="{{ mega_menu_block.settings.image_7_link | default: '#' }}" class="mobile-menu__nav-list-toggle text--strong mobile-menu__nav-list-mega">
+                        {%- if mega_menu_block.settings.image_7_svg == 'piggies_t_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_t_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'piggies_b_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_b_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'piggies_w_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'piggies_c_supplies' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_supplies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'piggies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'piggies_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'piggies_w_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'piggies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'piggies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'piggies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'piggies_grooming' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_grooming' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'bunnies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'bunnies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'bunnies_f_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'bunnies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'bunnies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'care_piggies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_piggies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'care_bunnies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_bunnies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'resource_vets' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_vets' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'resource_boarding' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_boarding' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'resource_rescue_list' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_rescue_list' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'resource_care_sheet' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_care_sheet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'resource_games' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_games' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'resource_videos' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_videos' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'krew_meet' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_meet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'krew_story' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_story' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'krew_about' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_about' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_kart' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'winter_wonderland' -%}
+                          <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == 'cheery_christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_sack' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == '20_under' -%}
+                          <span class="nav-icon">{%- render 'icon-20_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == '50_under' -%}
+                          <span class="nav-icon">{%- render 'icon-50_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == '100_under' -%}
+                          <span class="nav-icon">{%- render 'icon-100_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_7_svg == '100_over' -%}
+                          <span class="nav-icon">{%- render 'icon-100_over' -%}</span>
+                        {%- endif -%}
+                        <span>{{ mega_menu_block.settings.image_7_heading }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if mega_menu_block.settings.image_8_heading != blank -%}
+                    <div class="mobile-menu__nav-list-item">
+                      <a href="{{ mega_menu_block.settings.image_8_link | default: '#' }}" class="mobile-menu__nav-list-toggle text--strong mobile-menu__nav-list-mega">
+                        {%- if mega_menu_block.settings.image_8_svg == 'piggies_t_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_t_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'piggies_b_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_b_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'piggies_w_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'piggies_c_supplies' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_supplies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'piggies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'piggies_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'piggies_w_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'piggies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'piggies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'piggies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'piggies_grooming' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_grooming' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'bunnies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'bunnies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'bunnies_f_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'bunnies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'bunnies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'care_piggies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_piggies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'care_bunnies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_bunnies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'resource_vets' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_vets' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'resource_boarding' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_boarding' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'resource_rescue_list' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_rescue_list' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'resource_care_sheet' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_care_sheet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'resource_games' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_games' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'resource_videos' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_videos' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'krew_meet' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_meet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'krew_story' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_story' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'krew_about' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_about' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_kart' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'winter_wonderland' -%}
+                          <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == 'cheery_christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_sack' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == '20_under' -%}
+                          <span class="nav-icon">{%- render 'icon-20_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == '50_under' -%}
+                          <span class="nav-icon">{%- render 'icon-50_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == '100_under' -%}
+                          <span class="nav-icon">{%- render 'icon-100_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_8_svg == '100_over' -%}
+                          <span class="nav-icon">{%- render 'icon-100_over' -%}</span>
+                        {%- endif -%}
+                        <span>{{ mega_menu_block.settings.image_8_heading }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if mega_menu_block.settings.image_9_heading != blank -%}
+                    <div class="mobile-menu__nav-list-item">
+                      <a href="{{ mega_menu_block.settings.image_9_link | default: '#' }}" class="mobile-menu__nav-list-toggle text--strong mobile-menu__nav-list-mega">
+                        {%- if mega_menu_block.settings.image_9_svg == 'piggies_t_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_t_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'piggies_b_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_b_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'piggies_w_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'piggies_c_supplies' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_supplies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'piggies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'piggies_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'piggies_w_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'piggies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'piggies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'piggies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'piggies_grooming' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_grooming' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'bunnies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'bunnies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'bunnies_f_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'bunnies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'bunnies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'care_piggies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_piggies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'care_bunnies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_bunnies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'resource_vets' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_vets' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'resource_boarding' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_boarding' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'resource_rescue_list' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_rescue_list' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'resource_care_sheet' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_care_sheet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'resource_games' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_games' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'resource_videos' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_videos' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'krew_meet' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_meet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'krew_story' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_story' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'krew_about' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_about' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_kart' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'winter_wonderland' -%}
+                          <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == 'cheery_christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_sack' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == '20_under' -%}
+                          <span class="nav-icon">{%- render 'icon-20_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == '50_under' -%}
+                          <span class="nav-icon">{%- render 'icon-50_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == '100_under' -%}
+                          <span class="nav-icon">{%- render 'icon-100_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_9_svg == '100_over' -%}
+                          <span class="nav-icon">{%- render 'icon-100_over' -%}</span>
+                        {%- endif -%}
+                        <span>{{ mega_menu_block.settings.image_9_heading }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if mega_menu_block.settings.image_10_heading != blank -%}
+                    <div class="mobile-menu__nav-list-item">
+                      <a href="{{ mega_menu_block.settings.image_10_link | default: '#' }}" class="mobile-menu__nav-list-toggle text--strong mobile-menu__nav-list-mega">
+                        {%- if mega_menu_block.settings.image_10_svg == 'piggies_t_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_t_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'piggies_b_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_b_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'piggies_w_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'piggies_c_supplies' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_supplies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'piggies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'piggies_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'piggies_w_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'piggies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'piggies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'piggies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'piggies_grooming' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_grooming' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'bunnies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'bunnies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'bunnies_f_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'bunnies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'bunnies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'care_piggies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_piggies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'care_bunnies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_bunnies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'resource_vets' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_vets' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'resource_boarding' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_boarding' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'resource_rescue_list' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_rescue_list' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'resource_care_sheet' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_care_sheet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'resource_games' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_games' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'resource_videos' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_videos' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'krew_meet' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_meet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'krew_story' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_story' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'krew_about' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_about' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_kart' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'winter_wonderland' -%}
+                          <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == 'cheery_christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_sack' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == '20_under' -%}
+                          <span class="nav-icon">{%- render 'icon-20_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == '50_under' -%}
+                          <span class="nav-icon">{%- render 'icon-50_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == '100_under' -%}
+                          <span class="nav-icon">{%- render 'icon-100_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_10_svg == '100_over' -%}
+                          <span class="nav-icon">{%- render 'icon-100_over' -%}</span>
+                        {%- endif -%}
+                        <span>{{ mega_menu_block.settings.image_10_heading }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if mega_menu_block.settings.image_11_heading != blank -%}
+                    <div class="mobile-menu__nav-list-item">
+                      <a href="{{ mega_menu_block.settings.image_11_link | default: '#' }}" class="mobile-menu__nav-list-toggle text--strong mobile-menu__nav-list-mega">
+                        {%- if mega_menu_block.settings.image_11_svg == 'piggies_t_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_t_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'piggies_b_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_b_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'piggies_w_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'piggies_c_supplies' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_supplies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'piggies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'piggies_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'piggies_w_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'piggies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'piggies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'piggies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'piggies_grooming' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_grooming' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'bunnies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'bunnies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'bunnies_f_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'bunnies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'bunnies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'care_piggies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_piggies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'care_bunnies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_bunnies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'resource_vets' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_vets' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'resource_boarding' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_boarding' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'resource_rescue_list' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_rescue_list' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'resource_care_sheet' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_care_sheet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'resource_games' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_games' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'resource_videos' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_videos' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'krew_meet' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_meet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'krew_story' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_story' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'krew_about' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_about' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_kart' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'winter_wonderland' -%}
+                          <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == 'cheery_christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_sack' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == '20_under' -%}
+                          <span class="nav-icon">{%- render 'icon-20_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == '50_under' -%}
+                          <span class="nav-icon">{%- render 'icon-50_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == '100_under' -%}
+                          <span class="nav-icon">{%- render 'icon-100_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_11_svg == '100_over' -%}
+                          <span class="nav-icon">{%- render 'icon-100_over' -%}</span>
+                        {%- endif -%}
+                        <span>{{ mega_menu_block.settings.image_11_heading }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if mega_menu_block.settings.image_12_heading != blank -%}
+                    <div class="mobile-menu__nav-list-item">
+                      <a href="{{ mega_menu_block.settings.image_12_link | default: '#' }}" class="mobile-menu__nav-list-toggle text--strong mobile-menu__nav-list-mega">
+                        {%- if mega_menu_block.settings.image_12_svg == 'piggies_t_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_t_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'piggies_b_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_b_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'piggies_w_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'piggies_c_supplies' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_supplies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'piggies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'piggies_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'piggies_w_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_w_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'piggies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'piggies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'piggies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'piggies_grooming' -%}
+                          <span class="nav-icon">{%- render 'icon-piggies_grooming' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'bunnies_c_cages' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_c_cages' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'bunnies_f_linears' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_linears' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'bunnies_f_accessaries' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_f_accessaries' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'bunnies_food' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_food' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'bunnies_o_pen' -%}
+                          <span class="nav-icon">{%- render 'icon-bunnies_o_pen' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'care_piggies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_piggies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'care_bunnies' -%}
+                          <span class="nav-icon">{%- render 'icon-care_bunnies' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'resource_vets' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_vets' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'resource_boarding' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_boarding' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'resource_rescue_list' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_rescue_list' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'resource_care_sheet' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_care_sheet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'resource_games' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_games' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'resource_videos' -%}
+                          <span class="nav-icon">{%- render 'icon-resource_videos' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'krew_meet' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_meet' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'krew_story' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_story' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'krew_about' -%}
+                          <span class="nav-icon">{%- render 'icon-krew_about' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_kart' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'winter_wonderland' -%}
+                          <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == 'cheery_christmas' -%}
+                          <span class="nav-icon">{%- render 'icon-christmas_sack' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == '20_under' -%}
+                          <span class="nav-icon">{%- render 'icon-20_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == '50_under' -%}
+                          <span class="nav-icon">{%- render 'icon-50_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == '100_under' -%}
+                          <span class="nav-icon">{%- render 'icon-100_under' -%}</span>
+                        {%- elsif mega_menu_block.settings.image_12_svg == '100_over' -%}
+                          <span class="nav-icon">{%- render 'icon-100_over' -%}</span>
+                        {%- endif -%}
+                        <span>{{ mega_menu_block.settings.image_12_heading }}</span>
+                      </a>
+                    </div>
+                  {%- endif -%}
+                </div>
+              {% endif %}
+            {%- else -%}
+              <ul class="mobile-menu__nav" data-type="menu" role="list">
+                <li class="mobile-menu__nav-item">
+                  <a href="{{ link.url }}" class="mobile-menu__nav-link text--strong">{{ link.title }}</a>
+                </li>
+
+                {%- for sub_link in link.links -%}
+                  <li class="mobile-menu__nav-item">
+                    {%- if sub_link.links != blank -%}
+                      {%- capture panel_id -%}mobile-panel-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}{%- endcapture -%}
+
+                      <button class="mobile-menu__nav-link" data-type="menuitem" aria-haspopup="true" aria-expanded="false" aria-controls="{{ panel_id }}" data-action="open-panel">
+                        {{- sub_link.title -}} {%- render 'icon', icon: 'arrow-right' -%}
+                      </button>
+                    {%- else -%}
+                      <a href="{{ sub_link.url }}" class="mobile-menu__nav-link" data-type="menuitem">{{ sub_link.title }}</a>
+                    {%- endif -%}
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- comment -%}Finally we need to do the same to create the third level menus{%- endcomment -%}
+
+    {%- for link in menu.links -%}
+      {%- if link.links != blank -%}
+        {%- assign downcase_title = link.title | downcase -%}
+
+        {%- unless mega_menus contains downcase_title -%}
+          {%- for sub_link in link.links -%}
+            {%- if sub_link.links != blank -%}
+              {%- capture panel_id -%}mobile-panel-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}{%- endcapture -%}
+
+              <div id="{{ panel_id }}" class="mobile-menu__panel is-nested">
+                <div class="mobile-menu__section is-sticky">
+                  <button class="mobile-menu__back-button" data-action="close-panel">{% render 'icon', icon: 'arrow-left' %} {{ 'header.navigation.back' | t }}</button>
+                </div>
+
+                <div class="mobile-menu__section">
+                  <ul class="mobile-menu__nav" data-type="menu" role="list">
+                    <li class="mobile-menu__nav-item">
+                      <a href="{{ sub_link.url }}" class="mobile-menu__nav-link text--strong">{{ sub_link.title }}</a>
+                    </li>
+
+                    {%- for sub_sub_link in sub_link.links -%}
+                      <li class="mobile-menu__nav-item">
+                        <a href="{{ sub_sub_link.url }}" class="mobile-menu__nav-link" data-type="menuitem">{{ sub_sub_link.title }}</a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+</div>

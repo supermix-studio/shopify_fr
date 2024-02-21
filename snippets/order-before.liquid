@@ -1,0 +1,51 @@
+<style>
+#time {
+  margin: 0;
+  padding: 14px 14px 0 14px;
+  text-align: center;
+  font-size: 12.5px;
+}
+</style>
+
+<p id="time"></p>
+
+<script>
+  let summerTime = false;
+  {% if block.settings.enable_summertime %} summerTime = true; {% endif %}
+  const refHour = 11 + (summerTime?-1:0);
+  const refMinute = 30;
+  const refSecond = 0;
+
+  function isFullfilmentToday (today) {
+    let hours = today.getUTCHours();
+    let minutes = today.getUTCMinutes();
+    return hours < refHour || (hours == refHour && minutes < refMinute);
+  }
+
+  function hoursRemaining (today) {return refHour - today.getUTCHours() + (minutesRemaining(today)<0?-1:0);}
+  function minutesRemaining (today) {return refMinute - today.getUTCMinutes() + (secondsRemaining(today)<0?-1:0);}
+  function secondsRemaining (today) {return refSecond - today.getUTCSeconds();}
+  function to2Chars (num) {return num.toString().padStart(2, '0')}
+
+  function getShippingMessage (today) {
+  if (isFullfilmentToday(today)) {
+    let h = to2Chars(hoursRemaining(today)) ;
+    let m = to2Chars((minutesRemaining(today) + 60) % 60);
+    let s = to2Chars((secondsRemaining(today) + 60) % 60);
+    return (`Order before 11:30 a.m. and your purchase will be shipped today! (${h}:${m}:${s} remaining)`);
+  } else {
+    return (`All orders are shipped in less than 24 hours.`);
+  }
+  }
+
+  function addHours(numOfHours, date = new Date()) {
+    date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
+    return date;
+  }
+
+  var myfunc = setInterval(function() {
+      let date = new Date();
+      let msg = getShippingMessage(date);
+      document.getElementById("time").innerHTML = msg;
+  }, 1000);
+</script>

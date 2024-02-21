@@ -1,0 +1,2677 @@
+{%- capture section_settings -%}
+{
+  "navigationLayout": {{ section.settings.desktop_navigation_layout | json }},
+  "desktopOpenTrigger": {{ section.settings.desktop_navigation_open_trigger | json }},
+  "useStickyHeader": {{ section.settings.enable_sticky_header | json }}
+}
+{%- endcapture -%}
+
+{%- assign navigation_menu_handle = section.settings.navigation_menu | default: 'main-menu' -%}
+{%- assign navigation_menu = linklists[navigation_menu_handle] -%}
+
+{%- assign navigation_mobile_menu_handle = section.settings.navigation_mobile_menu | default: navigation_menu_handle -%}
+{%- assign navigation_mobile_menu = linklists[navigation_mobile_menu_handle] -%}
+
+<section data-section-id="{{ section.id }}" data-section-type="header" data-section-settings='{{ section_settings }}'>
+  <header class="header header--{{ section.settings.desktop_navigation_layout }} {% unless section.settings.show_condensed_search %}header--search-expanded{% endunless %}" role="banner">
+    <div class="container">
+      <div class="header__inner">
+        {%- comment -%}
+        --------------------------------------------------------------------------------------
+        MOBILE NAV
+        --------------------------------------------------------------------------------------
+        {%- endcomment -%}
+
+        {%- if navigation_menu.links.size > 0 -%}
+          <nav class="header__mobile-nav hidden-lap-and-up">
+            <button class="header__mobile-nav-toggle icon-state touch-area" data-action="toggle-menu" aria-expanded="false" aria-haspopup="true" aria-controls="mobile-menu" aria-label="{{ 'header.navigation.open_menu' | t }}">
+              <span class="icon-state__primary">
+                {%- render 'icon', icon: 'hamburger-mobile' -%}
+              </span>
+              <span class="icon-state__secondary">{%- render 'icon', icon: 'close' -%}</span>
+            </button>
+
+            {%- render 'mobile-menu', menu: navigation_mobile_menu -%}
+          </nav>
+        {%- endif -%}
+
+        {%- comment -%}
+          --------------------------------------------------------------------------------------
+          DESKTOP NAV
+          --------------------------------------------------------------------------------------
+        {%- endcomment -%}
+
+        {%- if section.settings.desktop_navigation_layout == 'condensed' and navigation_menu.links.size > 0 -%}
+          <nav class="header__desktop-nav hidden-pocket">
+            <button class="header__desktop-nav-toggle" data-action="toggle-menu" aria-expanded="false" aria-haspopup="true" aria-label="{{ 'header.navigation.open_menu' | t }}">
+              <span>{%- render 'icon', icon: 'hamburger' -%} <span class="header__desktop-nav-text">{{- 'header.navigation.menu' | t -}}</span></span>
+            </button>
+
+            {%- render 'desktop-menu', menu: navigation_menu, index: 'desktop-menu-0' -%}
+          </nav>
+        {%- endif -%}
+
+        {%- comment -%}
+        --------------------------------------------------------------------------------------
+        LOGO COMPONENT
+        --------------------------------------------------------------------------------------
+        {%- endcomment -%}
+
+        {%- capture header_logo -%}
+          <a href="{{ routes.root_url }}" class="header__logo-link">
+            {%- if section.settings.logo != blank -%}
+              {%- capture image_size -%}{{ section.settings.logo_max_width }}x{%- endcapture -%}
+              <span class="visually-hidden">{{ shop.name }}</span>
+              <img class="header__logo-image"
+                   style="max-width: {{ section.settings.logo_max_width }}px"
+                   width="{{ section.settings.logo.width }}"
+                   height="{{ section.settings.logo.height }}"
+                   src="{{ section.settings.logo | img_url: image_size, scale: 2 }}"
+                   alt="{{ section.settings.logo.alt | default: shop.name | escape }}">
+            {%- else -%}
+              <span class="header__logo-text">{{ shop.name }}</span>
+            {%- endif -%}
+          </a>
+        {%- endcapture -%}
+
+        {%- if request.page_type == 'index' -%}
+          <h1 class="header__logo">{{ header_logo }}</h1>
+        {%- else -%}
+          <div class="header__logo">{{ header_logo }}</div>
+        {%- endif -%}
+
+        {%- comment -%}
+        --------------------------------------------------------------------------------------
+        Main Nav
+        --------------------------------------------------------------------------------------
+        {%- endcomment -%}
+
+        {%- if section.settings.desktop_navigation_layout == 'inline' and navigation_menu.links.size > 0 -%}
+          <nav class="nav-bar">
+            <div class="nav-bar__inner">
+                <ul class="nav-bar__linklist list--unstyled" data-type="menu" role="list">
+                  {%- for link in navigation_menu.links -%}
+                    <li class="nav-bar__item">
+                      {%- if link.links.size == 0 -%}
+                        <a href="{{ link.url }}" class="nav-bar__link link" data-type="menuitem">
+                          {% if link.title == 'Home' %}
+                            <span class="nav-icon">{%- render 'icon-nav-home' -%}</span>
+                          {% elsif link.title == 'Blog' %}
+                            <span class="nav-icon">{%- render 'icon-nav-care' -%}</span>
+                          {% elsif link.title == 'Refuge Kavee' %}
+                            <span class="nav-icon">{%- render 'icon-nav-rescue' -%}</span>
+                          {% elsif link.title == 'SOLDES' %}
+                            <span class="nav-icon">{%- render 'icon-nav-sale' -%}</span>
+                          {% endif %}
+                          <span>{{ link.title }}</span>
+                        </a>
+                      {%- else -%}
+                        {%- capture index -%}desktop-menu-0-{{ forloop.index }}{%- endcapture -%}
+      
+                        <a href="{{ link.url }}" class="nav-bar__link link" data-type="menuitem" aria-expanded="false" aria-controls="{{ index }}" aria-haspopup="true">
+                          {% if link.title == 'Boutique pour cochons d’Inde' %}
+                            <span class="nav-icon">{%- render 'icon-nav-piggies' -%}</span>
+                          {% elsif link.title == 'Boutique pour lapins' %}
+                            <span class="nav-icon">{%- render 'icon-nav-bunnies' -%}</span>
+                          {% elsif link.title == 'Ressources gratuites' %}
+                            <span class="nav-icon">{%- render 'icon-nav-resources' -%}</span>
+                          {% elsif link.title == 'Rencontrez l’éKipe !' %}
+                            <span class="nav-icon">{%- render 'icon-nav-krew' -%}</span>
+                          {% elsif link.title == 'Noël' %}
+                            <span class="nav-icon">{%- render 'icon-nav-christmas' -%}</span>
+                          {% elsif link.title == 'SOLDES' %}
+                            <span class="nav-icon">{%- render 'icon-nav-sale' -%}</span>
+                          {% endif %}
+                          <span>{{- link.title -}}</span>
+                          {%- render 'icon', icon: 'arrow-bottom' -%}
+                          {%- render 'icon-nav-marker' -%}
+                        </a>
+      
+                        {%- render 'desktop-menu', menu: link, index: index -%}
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+          </nav>
+        {%- endif -%}
+
+        {%- comment -%}
+        --------------------------------------------------------------------------------------
+        SEARCH COMPONENT
+        --------------------------------------------------------------------------------------
+        {%- endcomment -%}
+
+        <div class="header__search-bar-wrapper {% unless section.settings.show_condensed_search %}is-visible{% endunless %}">
+          <form action="{{ routes.search_url }}" method="get" role="search" class="search-bar">
+            {%- assign search_menu = linklists[section.settings.search_menu] -%}
+
+            <div class="search-bar__top-wrapper">
+              <div class="search-bar__top">
+                <input type="hidden" name="type" value="product">
+                <input type="hidden" name="options[prefix]" value="last">
+                <input type="hidden" name="options[unavailable_products]" value="{{ settings.search_unavailable_products }}">
+
+                <div class="search-bar__input-wrapper">
+                  <input class="search-bar__input" type="text" name="q" autocomplete="off" autocorrect="off" aria-label="{{ 'header.search.input_placeholder' | t }}" placeholder="{{ 'header.search.input_placeholder' | t }}">
+                  <button type="button" class="search-bar__input-clear hidden-lap-and-up" data-action="clear-input">
+                    <span class="visually-hidden">{{ 'header.search.clear' | t }}</span>
+                    {% render 'icon', icon: 'close' %}
+                  </button>
+                </div>
+
+                {%- comment -%}The type detection is sometimes a bit inaccurate as it returns empty type, so we do an additional logic{%- endcomment -%}
+
+                {%- assign has_at_least_one_type = false -%}
+                {%- for product_type in shop.types -%}
+                  {%- if product_type != blank -%}
+                    {%- assign has_at_least_one_type = true -%}
+                    {%- break -%}
+                  {%- endif -%}
+                {%- endfor -%}
+
+                {%- if section.settings.show_search_filter and has_at_least_one_type -%}
+                  <div class="search-bar__filter">
+                    <label for="search-product-type" class="search-bar__filter-label">
+                      <span class="search-bar__filter-active">{{ 'header.search.all_categories' | t }}</span> {%- render 'icon', icon: 'arrow-bottom' -%}
+                    </label>
+
+                    <select id="search-product-type">
+                      <option value="" selected="selected">{{ 'header.search.all_categories' | t }}</option>
+
+                      {%- for product_type in shop.types -%}
+                        {%- if product_type != blank -%}
+                          <option value="{{ product_type | escape }}">{{ product_type | escape }}</option>
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </select>
+                  </div>
+                {%- endif -%}
+
+                <button type="submit" class="search-bar__submit" aria-label="{{ 'header.search.submit' | t }}">
+                  {%- render 'icon-magnifying-glass-hand-drawn' -%}
+                  {%- render 'icon', icon: 'search-loader' -%}
+                </button>
+              </div>
+
+              <button type="button" class="search-bar__close-button hidden-tablet-and-up" data-action="unfix-search">
+                <span class="search-bar__close-text">{{ 'header.search.close_search' | t }}</span>
+              </button>
+            </div>
+
+            <div class="search-bar__inner">
+              <div class="search-bar__results" aria-hidden="true">
+                <div class="skeleton-container">
+                  {%- for i in (1..3) -%}
+                    <div class="search-bar__result-item search-bar__result-item--skeleton">
+                      <div class="search-bar__image-container">
+                        <div class="aspect-ratio aspect-ratio--square">
+                          <div class="skeleton-image"></div>
+                        </div>
+                      </div>
+
+                      <div class="search-bar__item-info">
+                        <div class="skeleton-paragraph">
+                          <div class="skeleton-text"></div>
+                          <div class="skeleton-text"></div>
+                        </div>
+                      </div>
+                    </div>
+                  {%- endfor -%}
+                </div>
+
+                <div class="search-bar__results-inner">
+                  {%- comment -%}Placeholder div for real results{%- endcomment -%}
+                </div>
+              </div>
+
+              {%- if search_menu.links.size > 0 -%}
+                <div class="search-bar__menu-wrapper" aria-hidden="true">
+                  {%- if section.settings.show_search_menu_title -%}
+                    <p class="search-bar__menu-title heading">{{ search_menu.title }}</p>
+                  {%- endif -%}
+
+                  <ul class="search-bar__menu-linklist list--unstyled" role="list">
+                    {%- for link in search_menu.links -%}
+                      <li>
+                        <a href="{{ link.url }}" class="search-bar__menu-link">{{ link.title }}</a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              {%- endif -%}
+            </div>
+          </form>
+        </div>
+
+        {%- comment -%}
+        --------------------------------------------------------------------------------------
+        HEADER ACTIONS
+        --------------------------------------------------------------------------------------
+        {%- endcomment -%}
+
+        {%- if section.settings.show_country_selector and localization.available_countries.size > 1 -%}
+          {%- assign country_selector = true -%}
+        {%- endif -%}
+
+        {%- if section.settings.show_locale_selector and localization.available_languages.size > 0 -%}
+          {%- assign locale_selector = true -%}
+        {%- endif -%}
+
+        <div class="header__action-list">
+          {%- if locale_selector -%}
+            <div class="header__action-item header__action-item--locale">
+
+                <input type="hidden" name="locale_code" value="{{ localization.language.iso_code }}">
+              
+                <div class="header__action-item-content">
+                  <button class="header__action-item-link" data-action="toggle-popover" aria-controls="desktop-locale-selector" aria-expanded="false">
+                    <span class="locale-selector__value">{%- render 'icon-flag-fr' %}</span>
+                  </button>
+
+                  <div id="desktop-locale-selector" class="popover popover--locale" aria-hidden="true">
+                    <div class="popover__inner popover__inner--no-padding">
+                      <ul class="popover__linklist" role="list">
+                          <li class="popover__linklist-item">
+                            <a class="popover__link-item" href="https://kaveecage.com" target="_self">{%- render 'icon-flag-fr' %} FR</a>
+                          </li>
+                          <li class="popover__linklist-item">
+                            <a class="popover__link-item" href="https://kaveecage.net" target="_self">{%- render 'icon-flag-us' %} US</a>
+                          </li>
+                          <li class="popover__linklist-item">
+                            <a class="popover__link-item" href="https://kaveecage.co.uk" target="_self">{%- render 'icon-flag-uk' %} UK</a>
+                          </li>
+                      </ul>
+                    </div>
+                  </div>
+
+              </div>
+            </div>
+          {%- endif -%}
+
+          {%- if country_selector -%}
+            <div class="header__action-item header__action-item--currency hidden-pocket">
+              {%- form 'localization', id: 'localization_form_header_currency' -%}
+                <span class="header__action-item-title">{{ 'header.general.country' | t }}</span>
+                <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}">
+
+                <div class="header__action-item-content">
+                  <button class="header__action-item-link" data-action="toggle-popover" aria-controls="desktop-currency-selector" aria-expanded="false">
+                    <span class="currency-selector__value">{{- localization.country.name }} ({{ localization.country.currency.iso_code }} {% if localization.country.currency.symbol %}{{ localization.country.currency.symbol }}{%- endif -%})</span> {% render 'icon', icon: 'arrow-bottom' %}
+                  </button>
+
+                  <div id="desktop-currency-selector" class="popover popover--currency" aria-hidden="true">
+                    {%- render 'icon', icon: 'nav-triangle-borderless' -%}
+
+                    <div class="popover__inner popover__inner--no-padding popover__inner--restrict">
+                      <ul class="popover__linklist" role="list">
+                        {%- for country in localization.available_countries -%}
+                          <li class="popover__linklist-item">
+                            <button type="submit" name="country_code" class="popover__link-item" value="{{ country.iso_code }}" {% if country.iso_code == localization.country.iso_code %}aria-current="true"{% endif %}>
+                              {{- country.name }} ({{ country.currency.iso_code }} {% if country.currency.symbol %}{{ country.currency.symbol }}{%- endif -%})
+                            </button>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              {%- endform -%}
+            </div>
+          {%- endif -%}
+
+          {%- if section.settings.show_condensed_search -%}
+            <div class="header__action-item hidden-tablet-and-up">
+              <a class="header__action-item-link" href="{{ routes.search_url }}" data-action="toggle-search" aria-expanded="false" aria-label="{{ 'header.search.open_search' | t }}">
+                {% render 'icon', icon: 'search-2' %}
+              </a>
+            </div>
+          {%- endif -%}
+
+          {%- if shop.customer_accounts_enabled -%}
+            <div class="header__action-item header__action-item--account">
+
+              <div class="header__action-item-content">
+                <a href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}" class="header__action-item-link header__account-icon icon-state hidden-desk" aria-label="{{ 'header.general.account' | t }}" aria-controls="account-popover" aria-expanded="false" data-action="toggle-popover" {% if customer %}data-follow-link="phone"{% endif %}>
+                  <span class="icon-state__primary">
+                    {%- render 'icon', icon: 'account' -%}
+                  </span>
+                  <span class="icon-state__secondary">{%- render 'icon', icon: 'close' -%}</span>
+                </a>
+
+                <a href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}" class="header__action-item-link hidden-pocket hidden-lap" aria-controls="account-popover" aria-expanded="false" data-action="toggle-popover">
+                  {% render 'icon', icon: 'account' %}
+                </a>
+
+                <div id="account-popover" class="popover {% if customer %}popover--logged{% else %}popover--large popover--unlogged{% endif %}" aria-hidden="true">
+                  {%- if customer -%}
+                    <div class="popover__inner popover__inner--no-padding">
+                      <div class="popover__linklist">
+                        <a class="popover__link-item" href="{{ routes.account_url }}">{{ 'customer.general.orders' | t }}</a>
+                        <a class="popover__link-item" href="{{ routes.account_addresses_url }}">{{ 'customer.general.addresses' | t }}</a>
+                        <a class="popover__link-item" href="{{ routes.account_logout_url }}" data-no-instant>{{ 'customer.general.logout' | t }}</a>
+                      </div>
+                    </div>
+                  {%- else -%}
+                    <div class="popover__panel-list">
+                      {%- comment -%}LOGIN{%- endcomment -%}
+                      <div id="header-login-panel" class="popover__panel popover__panel--default is-selected">
+                        <div class="popover__inner">
+                          {%- form 'customer_login', name: 'login', class: 'form', id: 'header_customer_login' -%}
+                            <header class="popover__header">
+                              <h2 class="popover__title heading">{{ 'customer.login.login' | t }}</h2>
+                              <p class="popover__legend">{{ 'customer.login.description' | t }}</p>
+                            </header>
+
+                            <div class="form__input-wrapper form__input-wrapper--labelled">
+                              <input type="email" id="login-customer[email]" class="form__field form__field--text" autocomplete="email" name="customer[email]" required="required">
+                              <label for="login-customer[email]" class="form__floating-label">{{ 'customer.login.email' | t }}</label>
+                            </div>
+
+                            <div class="form__input-wrapper form__input-wrapper--labelled">
+                              <input type="password" id="login-customer[password]" class="form__field form__field--text" name="customer[password]" required="required" autocomplete="current-password">
+                              <label for="login-customer[password]" class="form__floating-label">{{ 'customer.login.password' | t }}</label>
+                            </div>
+
+                            <button type="submit" class="form__submit button button--primary button--full">{{ 'customer.login.submit' | t }}</button>
+                          {%- endform -%}
+
+                          <div class="popover__secondary-action">
+                            <p>{{ 'customer.login.new_customer' | t }} <a href="{{ routes.account_register_url }}" class="link link--accented">{{ 'customer.login.create_your_account' | t }}</a></p>
+                            <p>{{ 'customer.login.lost_password' | t }} <a href="{{ routes.account_url }}#recover-password" aria-controls="header-recover-panel" class="link link--accented">{{ 'customer.login.recover_password' | t }}</a></p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {%- comment -%}RECOVER{%- endcomment -%}
+                      <div id="header-recover-panel" class="popover__panel popover__panel--sliding">
+                        <div class="popover__inner">
+                          {%- form 'recover_customer_password', name: 'recover', class: 'form' -%}
+                            <header class="popover__header">
+                              <h2 class="popover__title heading">{{ 'customer.recover_password.recover_password' | t }}</h2>
+                              <p class="popover__legend">{{ 'customer.recover_password.description' | t }}</p>
+                            </header>
+
+                            <div class="form__input-wrapper form__input-wrapper--labelled">
+                              <input type="email" id="recover-customer[recover_email]" class="form__field form__field--text" name="email" required="required">
+                              <label for="recover-customer[recover_email]" class="form__floating-label">{{ 'customer.recover_password.email' | t }}</label>
+                            </div>
+
+                            <button type="submit" class="form__submit button button--primary button--full">{{ 'customer.recover_password.submit' | t }}</button>
+                          {%- endform -%}
+
+                          <div class="popover__secondary-action">
+                            <p>{{ 'customer.recover_password.remembered_your_password' | t }} <button data-action="show-popover-panel" aria-controls="header-login-panel" class="link link--accented">{{ 'customer.recover_password.back_to_login' | t }}</button></p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  {%- endif -%}
+                </div>
+              </div>
+            </div>
+          {%- endif -%}
+
+          <div class="header__action-item header__action-item--cart">
+            <a class="header__action-item-link header__cart-toggle" href="{{ routes.cart_url }}" {% if settings.cart_type != 'page' and template != 'cart' %}aria-controls="mini-cart" aria-expanded="false" data-action="toggle-mini-cart"{% endif %} data-no-instant>
+              <div class="header__action-item-content">
+                <div class="header__cart-icon icon-state" aria-expanded="false">
+                  <span class="icon-state__primary">
+                    {%- render 'icon', icon: 'cart' -%}
+                    <span class="header__cart-count">{{ cart.item_count }}</span>
+                  </span>
+
+                  <span class="icon-state__secondary">{%- render 'icon', icon: 'close' -%}</span>
+                </div>
+              </div>
+            </a>
+
+            {%- if settings.cart_type != 'page' and template != 'cart' -%}
+              {%- render 'mini-cart' -%}
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+</section>
+
+<style>
+  :root {
+    --header-is-sticky: {% if section.settings.enable_sticky_header %}1{% else %}0{% endif %};
+    --header-inline-navigation: {% if section.settings.desktop_navigation_layout == 'inline' %}1{% else %}0{% endif %};
+  }
+
+  #shopify-section-{{ section.id }} {
+    position: relative;
+    z-index: 1005;
+
+    {%- if section.settings.enable_sticky_header -%}
+      position: -webkit-sticky;
+      position: sticky;
+      top: 0;
+    {%- endif -%}
+  }
+
+  {%- if section.settings.logo -%}
+    .header__logo-image {
+      max-width: {{ section.settings.mobile_logo_max_width }}px !important;
+    }
+
+    @media screen and (min-width: 768px) {
+      .header__logo-image {
+        max-width: {{ section.settings.logo_max_width }}px !important;
+      }
+    }
+  {%- endif -%}
+
+</style>
+
+<script>
+  document.documentElement.style.setProperty('--header-height', document.getElementById('shopify-section-{{ section.id }}').clientHeight + 'px');
+</script>
+
+{% schema %}
+{
+  "name": "Header",
+  "class": "shopify-section__header",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_sticky_header",
+      "label": "Enable sticky header",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Image",
+      "info": "400 x 120px .png recommended"
+    },
+    {
+      "type": "range",
+      "id": "logo_max_width",
+      "min": 50,
+      "max": 300,
+      "step": 5,
+      "unit": "px",
+      "label": "Image width",
+      "default": 140
+    },
+    {
+      "type": "range",
+      "id": "mobile_logo_max_width",
+      "min": 50,
+      "max": 170,
+      "step": 5,
+      "unit": "px",
+      "label": "Mobile image width",
+      "default": 100
+    },
+    {
+      "type": "header",
+      "content": "Language selector",
+      "info": "To add a language, go to your [language settings.](/admin/settings/languages)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_locale_selector",
+      "label": "Show language selector",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Country/region selector",
+      "info": "To add a country/region, go to your [currency settings.](/admin/settings/payments)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_country_selector",
+      "label": "Show country/region selector",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "link_list",
+      "id": "navigation_menu",
+      "label": "Menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "link_list",
+      "id": "navigation_mobile_menu",
+      "label": "Mobile menu",
+      "info": "If none is set, the desktop menu is used."
+    },
+    {
+      "type": "select",
+      "id": "desktop_navigation_layout",
+      "label": "Desktop layout",
+      "options": [
+        {
+          "value": "condensed",
+          "label": "Condensed"
+        },
+        {
+          "value": "inline",
+          "label": "Inline"
+        }
+      ],
+      "default": "condensed"
+    },
+    {
+      "type": "select",
+      "id": "desktop_navigation_open_trigger",
+      "label": "Open dropdown on...",
+      "options": [
+        {
+          "value": "hover",
+          "label": "Hover"
+        },
+        {
+          "value": "click",
+          "label": "Click"
+        }
+      ],
+      "default": "hover"
+    },
+    {
+      "type": "header",
+      "content": "Mobile navigation"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_navigation_social_media",
+      "label": "Show social media",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "navigation_phone_number",
+      "label": "Phone number text"
+    },
+    {
+      "type": "text",
+      "id": "navigation_email",
+      "label": "Email"
+    },
+    {
+      "type": "header",
+      "content": "Search"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_condensed_search",
+      "label": "Minimise search on mobile",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search_filter",
+      "label": "Show search filter",
+      "default": true,
+      "info": "Refine by product type. [Learn more](https://support.maestrooo.com/article/184-navigation-filtering-search-results-by-product-type)"
+    },
+    {
+      "type": "link_list",
+      "id": "search_menu",
+      "label": "Quick links menu",
+      "info": "Show quick links when the user hasn't type anything. This menu won't show dropdown items."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search_menu_title",
+      "label": "Show quick links title",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "mega_menu",
+      "name": "Mega menu",
+      "settings": [
+        {
+          "type": "text",
+          "id": "menu_item",
+          "label": "Menu item",
+          "info": "Enter menu item to apply a mega menu dropdown. [Learn more](https://support.maestrooo.com/article/180-navigation-enabling-and-configuring-mega-navigation)."
+        },
+        {
+          "type": "header",
+          "content": "Image 1"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_1",
+          "label": "Image",
+          "info": "600 x 400px .jpg recommended"
+        },
+        {
+          "type": "text",
+          "id": "image_1_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "text",
+          "id": "image_1_text",
+          "label": "Text",
+          "default": "Tell your story"
+        },
+        {
+          "type": "url",
+          "id": "image_1_link",
+          "label": "Link"
+        },
+        {
+          "type": "header",
+          "content": "Image 2"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_2",
+          "label": "Image",
+          "info": "600 x 400px .jpg recommended"
+        },
+        {
+          "type": "text",
+          "id": "image_2_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "text",
+          "id": "image_2_text",
+          "label": "Text",
+          "default": "Tell your story"
+        },
+        {
+          "type": "url",
+          "id": "image_2_link",
+          "label": "Link"
+        }
+      ]
+    },
+    {
+      "type": "new_mega_menu",
+      "name": "New Mega menu",
+      "settings": [
+        {
+          "type": "text",
+          "id": "menu_item",
+          "label": "Menu item",
+          "info": "Enter menu item to apply a mega menu dropdown. [Learn more](https://support.maestrooo.com/article/180-navigation-enabling-and-configuring-mega-navigation)."
+        },
+        {
+          "type": "image_picker",
+          "id": "menu_featured_image_mobile",
+          "label": "Featured Image (Mobile/Tablet)"
+        },
+        {
+          "type": "header",
+          "content": "Menu 1"
+        },
+        {
+          "type": "text",
+          "id": "image_1_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "url",
+          "id": "image_1_link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "image_1_svg",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "piggies_t_cages",
+              "label": "Pigges Transparent Cages"
+            },
+            {
+              "value": "piggies_b_cages",
+              "label": "Pigges Black Cages"
+            },
+            {
+              "value": "piggies_w_cages",
+              "label": "Pigges White Cages"
+            },
+            {
+              "value": "piggies_c_supplies",
+              "label": "Pigges Cleaning Suppies"
+            },
+            {
+              "value": "piggies_f_linears",
+              "label": "Pigges Fleece Linears"
+            },
+            {
+              "value": "piggies_accessaries",
+              "label": "Pigges Accessaries"
+            },
+            {
+              "value": "piggies_w_accessaries",
+              "label": "Pigges Wooden Accessaries"
+            },
+            {
+              "value": "piggies_o_pen",
+              "label": "Pigges Outdoor Pen"
+            },
+            {
+              "value": "piggies_c_cages",
+              "label": "Pigges Building Cages"
+            },
+            {
+              "value": "piggies_food",
+              "label": "Pigges Food"
+            },
+            {
+              "value": "piggies_grooming",
+              "label": "Pigges Grooming"
+            },
+            {
+              "value": "bunnies_c_cages",
+              "label": "Bunnies Cages"
+            },
+            {
+              "value": "bunnies_f_linears",
+              "label": "Bunnies Fleece Linears"
+            },
+            {
+              "value": "bunnies_f_accessaries",
+              "label": "Bunnies Fleece Accessaries"
+            },
+            {
+              "value": "bunnies_food",
+              "label": "Bunnies Food"
+            },
+            {
+              "value": "bunnies_o_pen",
+              "label": "Bunnies Ourdoor Pen"
+            },
+            {
+              "value": "care_piggies",
+              "label": "Care Piggies"
+            },
+            {
+              "value": "care_bunnies",
+              "label": "Care Bunnies"
+            },
+            {
+              "value": "resource_vets",
+              "label": "Resource Vets"
+            },
+            {
+              "value": "resource_boarding",
+              "label": "Resource Boarding"
+            },
+            {
+              "value": "resource_rescue_list",
+              "label": "Resource Rescue List"
+            },
+            {
+              "value": "resource_care_sheet",
+              "label": "Resource Care Sheet"
+            },
+            {
+              "value": "resource_games",
+              "label": "Resource Games"
+            },
+            {
+              "value": "resource_videos",
+              "label": "Resource Videos"
+            },
+            {
+              "value": "krew_meet",
+              "label": "Krew Meet"
+            },
+            {
+              "value": "krew_story",
+              "label": "Krew Story"
+            },
+            {
+              "value": "krew_about",
+              "label": "Krew About"
+            },
+            {
+              "value": "christmas",
+              "label": "Christmas"
+            },
+            {
+              "value": "winter_wonderland",
+              "label": "Winter Wonderland"
+            },
+            {
+              "value": "cheery_christmas",
+              "label": "Cheery Christmas"
+            },
+            {
+              "value": "20_under",
+              "label": "Gifts under 20"
+            },
+            {
+              "value": "50_under",
+              "label": "Gifts under 50"
+            },
+            {
+              "value": "100_under",
+              "label": "Gifts under 100"
+            },
+            {
+              "value": "100_over",
+              "label": "Gifts over 100"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "header",
+          "content": "Menu 2"
+        },
+        {
+          "type": "text",
+          "id": "image_2_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "url",
+          "id": "image_2_link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "image_2_svg",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "piggies_t_cages",
+              "label": "Pigges Transparent Cages"
+            },
+            {
+              "value": "piggies_b_cages",
+              "label": "Pigges Black Cages"
+            },
+            {
+              "value": "piggies_w_cages",
+              "label": "Pigges White Cages"
+            },
+            {
+              "value": "piggies_c_supplies",
+              "label": "Pigges Cleaning Suppies"
+            },
+            {
+              "value": "piggies_f_linears",
+              "label": "Pigges Fleece Linears"
+            },
+            {
+              "value": "piggies_accessaries",
+              "label": "Pigges Accessaries"
+            },
+            {
+              "value": "piggies_w_accessaries",
+              "label": "Pigges Wooden Accessaries"
+            },
+            {
+              "value": "piggies_o_pen",
+              "label": "Pigges Outdoor Pen"
+            },
+            {
+              "value": "piggies_c_cages",
+              "label": "Pigges Building Cages"
+            },
+            {
+              "value": "piggies_food",
+              "label": "Pigges Food"
+            },
+            {
+              "value": "piggies_grooming",
+              "label": "Pigges Grooming"
+            },
+            {
+              "value": "bunnies_c_cages",
+              "label": "Bunnies Cages"
+            },
+            {
+              "value": "bunnies_f_linears",
+              "label": "Bunnies Fleece Linears"
+            },
+            {
+              "value": "bunnies_f_accessaries",
+              "label": "Bunnies Fleece Accessaries"
+            },
+            {
+              "value": "bunnies_food",
+              "label": "Bunnies Food"
+            },
+            {
+              "value": "bunnies_o_pen",
+              "label": "Bunnies Ourdoor Pen"
+            },
+            {
+              "value": "care_piggies",
+              "label": "Care Piggies"
+            },
+            {
+              "value": "care_bunnies",
+              "label": "Care Bunnies"
+            },
+            {
+              "value": "resource_vets",
+              "label": "Resource Vets"
+            },
+            {
+              "value": "resource_boarding",
+              "label": "Resource Boarding"
+            },
+            {
+              "value": "resource_rescue_list",
+              "label": "Resource Rescue List"
+            },
+            {
+              "value": "resource_care_sheet",
+              "label": "Resource Care Sheet"
+            },
+            {
+              "value": "resource_games",
+              "label": "Resource Games"
+            },
+            {
+              "value": "resource_videos",
+              "label": "Resource Videos"
+            },
+            {
+              "value": "krew_meet",
+              "label": "Krew Meet"
+            },
+            {
+              "value": "krew_story",
+              "label": "Krew Story"
+            },
+            {
+              "value": "krew_about",
+              "label": "Krew About"
+            },
+            {
+              "value": "christmas",
+              "label": "Christmas"
+            },
+            {
+              "value": "winter_wonderland",
+              "label": "Winter Wonderland"
+            },
+            {
+              "value": "cheery_christmas",
+              "label": "Cheery Christmas"
+            },
+            {
+              "value": "20_under",
+              "label": "Gifts under 20"
+            },
+            {
+              "value": "50_under",
+              "label": "Gifts under 50"
+            },
+            {
+              "value": "100_under",
+              "label": "Gifts under 100"
+            },
+            {
+              "value": "100_over",
+              "label": "Gifts over 100"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "header",
+          "content": "Menu 3"
+        },
+        {
+          "type": "text",
+          "id": "image_3_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "url",
+          "id": "image_3_link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "image_3_svg",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "piggies_t_cages",
+              "label": "Pigges Transparent Cages"
+            },
+            {
+              "value": "piggies_b_cages",
+              "label": "Pigges Black Cages"
+            },
+            {
+              "value": "piggies_w_cages",
+              "label": "Pigges White Cages"
+            },
+            {
+              "value": "piggies_c_supplies",
+              "label": "Pigges Cleaning Suppies"
+            },
+            {
+              "value": "piggies_f_linears",
+              "label": "Pigges Fleece Linears"
+            },
+            {
+              "value": "piggies_accessaries",
+              "label": "Pigges Accessaries"
+            },
+            {
+              "value": "piggies_w_accessaries",
+              "label": "Pigges Wooden Accessaries"
+            },
+            {
+              "value": "piggies_o_pen",
+              "label": "Pigges Outdoor Pen"
+            },
+            {
+              "value": "piggies_c_cages",
+              "label": "Pigges Building Cages"
+            },
+            {
+              "value": "piggies_food",
+              "label": "Pigges Food"
+            },
+            {
+              "value": "piggies_grooming",
+              "label": "Pigges Grooming"
+            },
+            {
+              "value": "bunnies_c_cages",
+              "label": "Bunnies Cages"
+            },
+            {
+              "value": "bunnies_f_linears",
+              "label": "Bunnies Fleece Linears"
+            },
+            {
+              "value": "bunnies_f_accessaries",
+              "label": "Bunnies Fleece Accessaries"
+            },
+            {
+              "value": "bunnies_food",
+              "label": "Bunnies Food"
+            },
+            {
+              "value": "bunnies_o_pen",
+              "label": "Bunnies Ourdoor Pen"
+            },
+            {
+              "value": "care_piggies",
+              "label": "Care Piggies"
+            },
+            {
+              "value": "care_bunnies",
+              "label": "Care Bunnies"
+            },
+            {
+              "value": "resource_vets",
+              "label": "Resource Vets"
+            },
+            {
+              "value": "resource_boarding",
+              "label": "Resource Boarding"
+            },
+            {
+              "value": "resource_rescue_list",
+              "label": "Resource Rescue List"
+            },
+            {
+              "value": "resource_care_sheet",
+              "label": "Resource Care Sheet"
+            },
+            {
+              "value": "resource_games",
+              "label": "Resource Games"
+            },
+            {
+              "value": "resource_videos",
+              "label": "Resource Videos"
+            },
+            {
+              "value": "krew_meet",
+              "label": "Krew Meet"
+            },
+            {
+              "value": "krew_story",
+              "label": "Krew Story"
+            },
+            {
+              "value": "krew_about",
+              "label": "Krew About"
+            },
+            {
+              "value": "christmas",
+              "label": "Christmas"
+            },
+            {
+              "value": "winter_wonderland",
+              "label": "Winter Wonderland"
+            },
+            {
+              "value": "cheery_christmas",
+              "label": "Cheery Christmas"
+            },
+            {
+              "value": "20_under",
+              "label": "Gifts under 20"
+            },
+            {
+              "value": "50_under",
+              "label": "Gifts under 50"
+            },
+            {
+              "value": "100_under",
+              "label": "Gifts under 100"
+            },
+            {
+              "value": "100_over",
+              "label": "Gifts over 100"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "header",
+          "content": "Menu 4"
+        },
+        {
+          "type": "text",
+          "id": "image_4_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "url",
+          "id": "image_4_link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "image_4_svg",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "piggies_t_cages",
+              "label": "Pigges Transparent Cages"
+            },
+            {
+              "value": "piggies_b_cages",
+              "label": "Pigges Black Cages"
+            },
+            {
+              "value": "piggies_w_cages",
+              "label": "Pigges White Cages"
+            },
+            {
+              "value": "piggies_c_supplies",
+              "label": "Pigges Cleaning Suppies"
+            },
+            {
+              "value": "piggies_f_linears",
+              "label": "Pigges Fleece Linears"
+            },
+            {
+              "value": "piggies_accessaries",
+              "label": "Pigges Accessaries"
+            },
+            {
+              "value": "piggies_w_accessaries",
+              "label": "Pigges Wooden Accessaries"
+            },
+            {
+              "value": "piggies_o_pen",
+              "label": "Pigges Outdoor Pen"
+            },
+            {
+              "value": "piggies_c_cages",
+              "label": "Pigges Building Cages"
+            },
+            {
+              "value": "piggies_food",
+              "label": "Pigges Food"
+            },
+            {
+              "value": "piggies_grooming",
+              "label": "Pigges Grooming"
+            },
+            {
+              "value": "bunnies_c_cages",
+              "label": "Bunnies Cages"
+            },
+            {
+              "value": "bunnies_f_linears",
+              "label": "Bunnies Fleece Linears"
+            },
+            {
+              "value": "bunnies_f_accessaries",
+              "label": "Bunnies Fleece Accessaries"
+            },
+            {
+              "value": "bunnies_food",
+              "label": "Bunnies Food"
+            },
+            {
+              "value": "bunnies_o_pen",
+              "label": "Bunnies Ourdoor Pen"
+            },
+            {
+              "value": "care_piggies",
+              "label": "Care Piggies"
+            },
+            {
+              "value": "care_bunnies",
+              "label": "Care Bunnies"
+            },
+            {
+              "value": "resource_vets",
+              "label": "Resource Vets"
+            },
+            {
+              "value": "resource_boarding",
+              "label": "Resource Boarding"
+            },
+            {
+              "value": "resource_rescue_list",
+              "label": "Resource Rescue List"
+            },
+            {
+              "value": "resource_care_sheet",
+              "label": "Resource Care Sheet"
+            },
+            {
+              "value": "resource_games",
+              "label": "Resource Games"
+            },
+            {
+              "value": "resource_videos",
+              "label": "Resource Videos"
+            },
+            {
+              "value": "krew_meet",
+              "label": "Krew Meet"
+            },
+            {
+              "value": "krew_story",
+              "label": "Krew Story"
+            },
+            {
+              "value": "krew_about",
+              "label": "Krew About"
+            },
+            {
+              "value": "christmas",
+              "label": "Christmas"
+            },
+            {
+              "value": "winter_wonderland",
+              "label": "Winter Wonderland"
+            },
+            {
+              "value": "cheery_christmas",
+              "label": "Cheery Christmas"
+            },
+            {
+              "value": "20_under",
+              "label": "Gifts under 20"
+            },
+            {
+              "value": "50_under",
+              "label": "Gifts under 50"
+            },
+            {
+              "value": "100_under",
+              "label": "Gifts under 100"
+            },
+            {
+              "value": "100_over",
+              "label": "Gifts over 100"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "header",
+          "content": "Menu 5"
+        },
+        {
+          "type": "text",
+          "id": "image_5_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "url",
+          "id": "image_5_link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "image_5_svg",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "piggies_t_cages",
+              "label": "Pigges Transparent Cages"
+            },
+            {
+              "value": "piggies_b_cages",
+              "label": "Pigges Black Cages"
+            },
+            {
+              "value": "piggies_w_cages",
+              "label": "Pigges White Cages"
+            },
+            {
+              "value": "piggies_c_supplies",
+              "label": "Pigges Cleaning Suppies"
+            },
+            {
+              "value": "piggies_f_linears",
+              "label": "Pigges Fleece Linears"
+            },
+            {
+              "value": "piggies_accessaries",
+              "label": "Pigges Accessaries"
+            },
+            {
+              "value": "piggies_w_accessaries",
+              "label": "Pigges Wooden Accessaries"
+            },
+            {
+              "value": "piggies_o_pen",
+              "label": "Pigges Outdoor Pen"
+            },
+            {
+              "value": "piggies_c_cages",
+              "label": "Pigges Building Cages"
+            },
+            {
+              "value": "piggies_food",
+              "label": "Pigges Food"
+            },
+            {
+              "value": "piggies_grooming",
+              "label": "Pigges Grooming"
+            },
+            {
+              "value": "bunnies_c_cages",
+              "label": "Bunnies Cages"
+            },
+            {
+              "value": "bunnies_f_linears",
+              "label": "Bunnies Fleece Linears"
+            },
+            {
+              "value": "bunnies_f_accessaries",
+              "label": "Bunnies Fleece Accessaries"
+            },
+            {
+              "value": "bunnies_food",
+              "label": "Bunnies Food"
+            },
+            {
+              "value": "bunnies_o_pen",
+              "label": "Bunnies Ourdoor Pen"
+            },
+            {
+              "value": "care_piggies",
+              "label": "Care Piggies"
+            },
+            {
+              "value": "care_bunnies",
+              "label": "Care Bunnies"
+            },
+            {
+              "value": "resource_vets",
+              "label": "Resource Vets"
+            },
+            {
+              "value": "resource_boarding",
+              "label": "Resource Boarding"
+            },
+            {
+              "value": "resource_rescue_list",
+              "label": "Resource Rescue List"
+            },
+            {
+              "value": "resource_care_sheet",
+              "label": "Resource Care Sheet"
+            },
+            {
+              "value": "resource_games",
+              "label": "Resource Games"
+            },
+            {
+              "value": "resource_videos",
+              "label": "Resource Videos"
+            },
+            {
+              "value": "krew_meet",
+              "label": "Krew Meet"
+            },
+            {
+              "value": "krew_story",
+              "label": "Krew Story"
+            },
+            {
+              "value": "krew_about",
+              "label": "Krew About"
+            },
+            {
+              "value": "christmas",
+              "label": "Christmas"
+            },
+            {
+              "value": "winter_wonderland",
+              "label": "Winter Wonderland"
+            },
+            {
+              "value": "cheery_christmas",
+              "label": "Cheery Christmas"
+            },
+            {
+              "value": "20_under",
+              "label": "Gifts under 20"
+            },
+            {
+              "value": "50_under",
+              "label": "Gifts under 50"
+            },
+            {
+              "value": "100_under",
+              "label": "Gifts under 100"
+            },
+            {
+              "value": "100_over",
+              "label": "Gifts over 100"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "header",
+          "content": "Menu 6"
+        },
+        {
+          "type": "text",
+          "id": "image_6_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "url",
+          "id": "image_6_link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "image_6_svg",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "piggies_t_cages",
+              "label": "Pigges Transparent Cages"
+            },
+            {
+              "value": "piggies_b_cages",
+              "label": "Pigges Black Cages"
+            },
+            {
+              "value": "piggies_w_cages",
+              "label": "Pigges White Cages"
+            },
+            {
+              "value": "piggies_c_supplies",
+              "label": "Pigges Cleaning Suppies"
+            },
+            {
+              "value": "piggies_f_linears",
+              "label": "Pigges Fleece Linears"
+            },
+            {
+              "value": "piggies_accessaries",
+              "label": "Pigges Accessaries"
+            },
+            {
+              "value": "piggies_w_accessaries",
+              "label": "Pigges Wooden Accessaries"
+            },
+            {
+              "value": "piggies_o_pen",
+              "label": "Pigges Outdoor Pen"
+            },
+            {
+              "value": "piggies_c_cages",
+              "label": "Pigges Building Cages"
+            },
+            {
+              "value": "piggies_food",
+              "label": "Pigges Food"
+            },
+            {
+              "value": "piggies_grooming",
+              "label": "Pigges Grooming"
+            },
+            {
+              "value": "bunnies_c_cages",
+              "label": "Bunnies Cages"
+            },
+            {
+              "value": "bunnies_f_linears",
+              "label": "Bunnies Fleece Linears"
+            },
+            {
+              "value": "bunnies_f_accessaries",
+              "label": "Bunnies Fleece Accessaries"
+            },
+            {
+              "value": "bunnies_food",
+              "label": "Bunnies Food"
+            },
+            {
+              "value": "bunnies_o_pen",
+              "label": "Bunnies Ourdoor Pen"
+            },
+            {
+              "value": "care_piggies",
+              "label": "Care Piggies"
+            },
+            {
+              "value": "care_bunnies",
+              "label": "Care Bunnies"
+            },
+            {
+              "value": "resource_vets",
+              "label": "Resource Vets"
+            },
+            {
+              "value": "resource_boarding",
+              "label": "Resource Boarding"
+            },
+            {
+              "value": "resource_rescue_list",
+              "label": "Resource Rescue List"
+            },
+            {
+              "value": "resource_care_sheet",
+              "label": "Resource Care Sheet"
+            },
+            {
+              "value": "resource_games",
+              "label": "Resource Games"
+            },
+            {
+              "value": "resource_videos",
+              "label": "Resource Videos"
+            },
+            {
+              "value": "krew_meet",
+              "label": "Krew Meet"
+            },
+            {
+              "value": "krew_story",
+              "label": "Krew Story"
+            },
+            {
+              "value": "krew_about",
+              "label": "Krew About"
+            },
+            {
+              "value": "christmas",
+              "label": "Christmas"
+            },
+            {
+              "value": "winter_wonderland",
+              "label": "Winter Wonderland"
+            },
+            {
+              "value": "cheery_christmas",
+              "label": "Cheery Christmas"
+            },
+            {
+              "value": "20_under",
+              "label": "Gifts under 20"
+            },
+            {
+              "value": "50_under",
+              "label": "Gifts under 50"
+            },
+            {
+              "value": "100_under",
+              "label": "Gifts under 100"
+            },
+            {
+              "value": "100_over",
+              "label": "Gifts over 100"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "header",
+          "content": "Menu 7"
+        },
+        {
+          "type": "text",
+          "id": "image_7_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "url",
+          "id": "image_7_link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "image_7_svg",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "piggies_t_cages",
+              "label": "Pigges Transparent Cages"
+            },
+            {
+              "value": "piggies_b_cages",
+              "label": "Pigges Black Cages"
+            },
+            {
+              "value": "piggies_w_cages",
+              "label": "Pigges White Cages"
+            },
+            {
+              "value": "piggies_c_supplies",
+              "label": "Pigges Cleaning Suppies"
+            },
+            {
+              "value": "piggies_f_linears",
+              "label": "Pigges Fleece Linears"
+            },
+            {
+              "value": "piggies_accessaries",
+              "label": "Pigges Accessaries"
+            },
+            {
+              "value": "piggies_w_accessaries",
+              "label": "Pigges Wooden Accessaries"
+            },
+            {
+              "value": "piggies_o_pen",
+              "label": "Pigges Outdoor Pen"
+            },
+            {
+              "value": "piggies_c_cages",
+              "label": "Pigges Building Cages"
+            },
+            {
+              "value": "piggies_food",
+              "label": "Pigges Food"
+            },
+            {
+              "value": "piggies_grooming",
+              "label": "Pigges Grooming"
+            },
+            {
+              "value": "bunnies_c_cages",
+              "label": "Bunnies Cages"
+            },
+            {
+              "value": "bunnies_f_linears",
+              "label": "Bunnies Fleece Linears"
+            },
+            {
+              "value": "bunnies_f_accessaries",
+              "label": "Bunnies Fleece Accessaries"
+            },
+            {
+              "value": "bunnies_food",
+              "label": "Bunnies Food"
+            },
+            {
+              "value": "bunnies_o_pen",
+              "label": "Bunnies Ourdoor Pen"
+            },
+            {
+              "value": "care_piggies",
+              "label": "Care Piggies"
+            },
+            {
+              "value": "care_bunnies",
+              "label": "Care Bunnies"
+            },
+            {
+              "value": "resource_vets",
+              "label": "Resource Vets"
+            },
+            {
+              "value": "resource_boarding",
+              "label": "Resource Boarding"
+            },
+            {
+              "value": "resource_rescue_list",
+              "label": "Resource Rescue List"
+            },
+            {
+              "value": "resource_care_sheet",
+              "label": "Resource Care Sheet"
+            },
+            {
+              "value": "resource_games",
+              "label": "Resource Games"
+            },
+            {
+              "value": "resource_videos",
+              "label": "Resource Videos"
+            },
+            {
+              "value": "krew_meet",
+              "label": "Krew Meet"
+            },
+            {
+              "value": "krew_story",
+              "label": "Krew Story"
+            },
+            {
+              "value": "krew_about",
+              "label": "Krew About"
+            },
+            {
+              "value": "christmas",
+              "label": "Christmas"
+            },
+            {
+              "value": "winter_wonderland",
+              "label": "Winter Wonderland"
+            },
+            {
+              "value": "cheery_christmas",
+              "label": "Cheery Christmas"
+            },
+            {
+              "value": "20_under",
+              "label": "Gifts under 20"
+            },
+            {
+              "value": "50_under",
+              "label": "Gifts under 50"
+            },
+            {
+              "value": "100_under",
+              "label": "Gifts under 100"
+            },
+            {
+              "value": "100_over",
+              "label": "Gifts over 100"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "header",
+          "content": "Menu 8"
+        },
+        {
+          "type": "text",
+          "id": "image_8_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "url",
+          "id": "image_8_link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "image_8_svg",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "piggies_t_cages",
+              "label": "Pigges Transparent Cages"
+            },
+            {
+              "value": "piggies_b_cages",
+              "label": "Pigges Black Cages"
+            },
+            {
+              "value": "piggies_w_cages",
+              "label": "Pigges White Cages"
+            },
+            {
+              "value": "piggies_c_supplies",
+              "label": "Pigges Cleaning Suppies"
+            },
+            {
+              "value": "piggies_f_linears",
+              "label": "Pigges Fleece Linears"
+            },
+            {
+              "value": "piggies_accessaries",
+              "label": "Pigges Accessaries"
+            },
+            {
+              "value": "piggies_w_accessaries",
+              "label": "Pigges Wooden Accessaries"
+            },
+            {
+              "value": "piggies_o_pen",
+              "label": "Pigges Outdoor Pen"
+            },
+            {
+              "value": "piggies_c_cages",
+              "label": "Pigges Building Cages"
+            },
+            {
+              "value": "piggies_food",
+              "label": "Pigges Food"
+            },
+            {
+              "value": "piggies_grooming",
+              "label": "Pigges Grooming"
+            },
+            {
+              "value": "bunnies_c_cages",
+              "label": "Bunnies Cages"
+            },
+            {
+              "value": "bunnies_f_linears",
+              "label": "Bunnies Fleece Linears"
+            },
+            {
+              "value": "bunnies_f_accessaries",
+              "label": "Bunnies Fleece Accessaries"
+            },
+            {
+              "value": "bunnies_food",
+              "label": "Bunnies Food"
+            },
+            {
+              "value": "bunnies_o_pen",
+              "label": "Bunnies Ourdoor Pen"
+            },
+            {
+              "value": "care_piggies",
+              "label": "Care Piggies"
+            },
+            {
+              "value": "care_bunnies",
+              "label": "Care Bunnies"
+            },
+            {
+              "value": "resource_vets",
+              "label": "Resource Vets"
+            },
+            {
+              "value": "resource_boarding",
+              "label": "Resource Boarding"
+            },
+            {
+              "value": "resource_rescue_list",
+              "label": "Resource Rescue List"
+            },
+            {
+              "value": "resource_care_sheet",
+              "label": "Resource Care Sheet"
+            },
+            {
+              "value": "resource_games",
+              "label": "Resource Games"
+            },
+            {
+              "value": "resource_videos",
+              "label": "Resource Videos"
+            },
+            {
+              "value": "krew_meet",
+              "label": "Krew Meet"
+            },
+            {
+              "value": "krew_story",
+              "label": "Krew Story"
+            },
+            {
+              "value": "krew_about",
+              "label": "Krew About"
+            },
+            {
+              "value": "christmas",
+              "label": "Christmas"
+            },
+            {
+              "value": "winter_wonderland",
+              "label": "Winter Wonderland"
+            },
+            {
+              "value": "cheery_christmas",
+              "label": "Cheery Christmas"
+            },
+            {
+              "value": "20_under",
+              "label": "Gifts under 20"
+            },
+            {
+              "value": "50_under",
+              "label": "Gifts under 50"
+            },
+            {
+              "value": "100_under",
+              "label": "Gifts under 100"
+            },
+            {
+              "value": "100_over",
+              "label": "Gifts over 100"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "header",
+          "content": "Menu 9"
+        },
+        {
+          "type": "text",
+          "id": "image_9_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "url",
+          "id": "image_9_link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "image_9_svg",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "piggies_t_cages",
+              "label": "Pigges Transparent Cages"
+            },
+            {
+              "value": "piggies_b_cages",
+              "label": "Pigges Black Cages"
+            },
+            {
+              "value": "piggies_w_cages",
+              "label": "Pigges White Cages"
+            },
+            {
+              "value": "piggies_c_supplies",
+              "label": "Pigges Cleaning Suppies"
+            },
+            {
+              "value": "piggies_f_linears",
+              "label": "Pigges Fleece Linears"
+            },
+            {
+              "value": "piggies_accessaries",
+              "label": "Pigges Accessaries"
+            },
+            {
+              "value": "piggies_w_accessaries",
+              "label": "Pigges Wooden Accessaries"
+            },
+            {
+              "value": "piggies_o_pen",
+              "label": "Pigges Outdoor Pen"
+            },
+            {
+              "value": "piggies_c_cages",
+              "label": "Pigges Building Cages"
+            },
+            {
+              "value": "piggies_food",
+              "label": "Pigges Food"
+            },
+            {
+              "value": "piggies_grooming",
+              "label": "Pigges Grooming"
+            },
+            {
+              "value": "bunnies_c_cages",
+              "label": "Bunnies Cages"
+            },
+            {
+              "value": "bunnies_f_linears",
+              "label": "Bunnies Fleece Linears"
+            },
+            {
+              "value": "bunnies_f_accessaries",
+              "label": "Bunnies Fleece Accessaries"
+            },
+            {
+              "value": "bunnies_food",
+              "label": "Bunnies Food"
+            },
+            {
+              "value": "bunnies_o_pen",
+              "label": "Bunnies Ourdoor Pen"
+            },
+            {
+              "value": "care_piggies",
+              "label": "Care Piggies"
+            },
+            {
+              "value": "care_bunnies",
+              "label": "Care Bunnies"
+            },
+            {
+              "value": "resource_vets",
+              "label": "Resource Vets"
+            },
+            {
+              "value": "resource_boarding",
+              "label": "Resource Boarding"
+            },
+            {
+              "value": "resource_rescue_list",
+              "label": "Resource Rescue List"
+            },
+            {
+              "value": "resource_care_sheet",
+              "label": "Resource Care Sheet"
+            },
+            {
+              "value": "resource_games",
+              "label": "Resource Games"
+            },
+            {
+              "value": "resource_videos",
+              "label": "Resource Videos"
+            },
+            {
+              "value": "krew_meet",
+              "label": "Krew Meet"
+            },
+            {
+              "value": "krew_story",
+              "label": "Krew Story"
+            },
+            {
+              "value": "krew_about",
+              "label": "Krew About"
+            },
+            {
+              "value": "christmas",
+              "label": "Christmas"
+            },
+            {
+              "value": "winter_wonderland",
+              "label": "Winter Wonderland"
+            },
+            {
+              "value": "cheery_christmas",
+              "label": "Cheery Christmas"
+            },
+            {
+              "value": "20_under",
+              "label": "Gifts under 20"
+            },
+            {
+              "value": "50_under",
+              "label": "Gifts under 50"
+            },
+            {
+              "value": "100_under",
+              "label": "Gifts under 100"
+            },
+            {
+              "value": "100_over",
+              "label": "Gifts over 100"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "header",
+          "content": "Menu 10"
+        },
+        {
+          "type": "text",
+          "id": "image_10_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "url",
+          "id": "image_10_link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "image_10_svg",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "piggies_t_cages",
+              "label": "Pigges Transparent Cages"
+            },
+            {
+              "value": "piggies_b_cages",
+              "label": "Pigges Black Cages"
+            },
+            {
+              "value": "piggies_w_cages",
+              "label": "Pigges White Cages"
+            },
+            {
+              "value": "piggies_c_supplies",
+              "label": "Pigges Cleaning Suppies"
+            },
+            {
+              "value": "piggies_f_linears",
+              "label": "Pigges Fleece Linears"
+            },
+            {
+              "value": "piggies_accessaries",
+              "label": "Pigges Accessaries"
+            },
+            {
+              "value": "piggies_w_accessaries",
+              "label": "Pigges Wooden Accessaries"
+            },
+            {
+              "value": "piggies_o_pen",
+              "label": "Pigges Outdoor Pen"
+            },
+            {
+              "value": "piggies_c_cages",
+              "label": "Pigges Building Cages"
+            },
+            {
+              "value": "piggies_food",
+              "label": "Pigges Food"
+            },
+            {
+              "value": "piggies_grooming",
+              "label": "Pigges Grooming"
+            },
+            {
+              "value": "bunnies_c_cages",
+              "label": "Bunnies Cages"
+            },
+            {
+              "value": "bunnies_f_linears",
+              "label": "Bunnies Fleece Linears"
+            },
+            {
+              "value": "bunnies_f_accessaries",
+              "label": "Bunnies Fleece Accessaries"
+            },
+            {
+              "value": "bunnies_food",
+              "label": "Bunnies Food"
+            },
+            {
+              "value": "bunnies_o_pen",
+              "label": "Bunnies Ourdoor Pen"
+            },
+            {
+              "value": "care_piggies",
+              "label": "Care Piggies"
+            },
+            {
+              "value": "care_bunnies",
+              "label": "Care Bunnies"
+            },
+            {
+              "value": "resource_vets",
+              "label": "Resource Vets"
+            },
+            {
+              "value": "resource_boarding",
+              "label": "Resource Boarding"
+            },
+            {
+              "value": "resource_rescue_list",
+              "label": "Resource Rescue List"
+            },
+            {
+              "value": "resource_care_sheet",
+              "label": "Resource Care Sheet"
+            },
+            {
+              "value": "resource_games",
+              "label": "Resource Games"
+            },
+            {
+              "value": "resource_videos",
+              "label": "Resource Videos"
+            },
+            {
+              "value": "krew_meet",
+              "label": "Krew Meet"
+            },
+            {
+              "value": "krew_story",
+              "label": "Krew Story"
+            },
+            {
+              "value": "krew_about",
+              "label": "Krew About"
+            },
+            {
+              "value": "christmas",
+              "label": "Christmas"
+            },
+            {
+              "value": "winter_wonderland",
+              "label": "Winter Wonderland"
+            },
+            {
+              "value": "cheery_christmas",
+              "label": "Cheery Christmas"
+            },
+            {
+              "value": "20_under",
+              "label": "Gifts under 20"
+            },
+            {
+              "value": "50_under",
+              "label": "Gifts under 50"
+            },
+            {
+              "value": "100_under",
+              "label": "Gifts under 100"
+            },
+            {
+              "value": "100_over",
+              "label": "Gifts over 100"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "header",
+          "content": "Menu 11"
+        },
+        {
+          "type": "text",
+          "id": "image_11_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "url",
+          "id": "image_11_link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "image_11_svg",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "piggies_t_cages",
+              "label": "Pigges Transparent Cages"
+            },
+            {
+              "value": "piggies_b_cages",
+              "label": "Pigges Black Cages"
+            },
+            {
+              "value": "piggies_w_cages",
+              "label": "Pigges White Cages"
+            },
+            {
+              "value": "piggies_c_supplies",
+              "label": "Pigges Cleaning Suppies"
+            },
+            {
+              "value": "piggies_f_linears",
+              "label": "Pigges Fleece Linears"
+            },
+            {
+              "value": "piggies_accessaries",
+              "label": "Pigges Accessaries"
+            },
+            {
+              "value": "piggies_w_accessaries",
+              "label": "Pigges Wooden Accessaries"
+            },
+            {
+              "value": "piggies_o_pen",
+              "label": "Pigges Outdoor Pen"
+            },
+            {
+              "value": "piggies_c_cages",
+              "label": "Pigges Building Cages"
+            },
+            {
+              "value": "piggies_food",
+              "label": "Pigges Food"
+            },
+            {
+              "value": "piggies_grooming",
+              "label": "Pigges Grooming"
+            },
+            {
+              "value": "bunnies_c_cages",
+              "label": "Bunnies Cages"
+            },
+            {
+              "value": "bunnies_f_linears",
+              "label": "Bunnies Fleece Linears"
+            },
+            {
+              "value": "bunnies_f_accessaries",
+              "label": "Bunnies Fleece Accessaries"
+            },
+            {
+              "value": "bunnies_food",
+              "label": "Bunnies Food"
+            },
+            {
+              "value": "bunnies_o_pen",
+              "label": "Bunnies Ourdoor Pen"
+            },
+            {
+              "value": "care_piggies",
+              "label": "Care Piggies"
+            },
+            {
+              "value": "care_bunnies",
+              "label": "Care Bunnies"
+            },
+            {
+              "value": "resource_vets",
+              "label": "Resource Vets"
+            },
+            {
+              "value": "resource_boarding",
+              "label": "Resource Boarding"
+            },
+            {
+              "value": "resource_rescue_list",
+              "label": "Resource Rescue List"
+            },
+            {
+              "value": "resource_care_sheet",
+              "label": "Resource Care Sheet"
+            },
+            {
+              "value": "resource_games",
+              "label": "Resource Games"
+            },
+            {
+              "value": "resource_videos",
+              "label": "Resource Videos"
+            },
+            {
+              "value": "krew_meet",
+              "label": "Krew Meet"
+            },
+            {
+              "value": "krew_story",
+              "label": "Krew Story"
+            },
+            {
+              "value": "krew_about",
+              "label": "Krew About"
+            },
+            {
+              "value": "christmas",
+              "label": "Christmas"
+            },
+            {
+              "value": "winter_wonderland",
+              "label": "Winter Wonderland"
+            },
+            {
+              "value": "cheery_christmas",
+              "label": "Cheery Christmas"
+            },
+            {
+              "value": "20_under",
+              "label": "Gifts under 20"
+            },
+            {
+              "value": "50_under",
+              "label": "Gifts under 50"
+            },
+            {
+              "value": "100_under",
+              "label": "Gifts under 100"
+            },
+            {
+              "value": "100_over",
+              "label": "Gifts over 100"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "header",
+          "content": "Menu 12"
+        },
+        {
+          "type": "text",
+          "id": "image_12_heading",
+          "label": "Heading",
+          "default": "Your image"
+        },
+        {
+          "type": "url",
+          "id": "image_12_link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "image_12_svg",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "piggies_t_cages",
+              "label": "Pigges Transparent Cages"
+            },
+            {
+              "value": "piggies_b_cages",
+              "label": "Pigges Black Cages"
+            },
+            {
+              "value": "piggies_w_cages",
+              "label": "Pigges White Cages"
+            },
+            {
+              "value": "piggies_c_supplies",
+              "label": "Pigges Cleaning Suppies"
+            },
+            {
+              "value": "piggies_f_linears",
+              "label": "Pigges Fleece Linears"
+            },
+            {
+              "value": "piggies_accessaries",
+              "label": "Pigges Accessaries"
+            },
+            {
+              "value": "piggies_w_accessaries",
+              "label": "Pigges Wooden Accessaries"
+            },
+            {
+              "value": "piggies_o_pen",
+              "label": "Pigges Outdoor Pen"
+            },
+            {
+              "value": "piggies_c_cages",
+              "label": "Pigges Building Cages"
+            },
+            {
+              "value": "piggies_food",
+              "label": "Pigges Food"
+            },
+            {
+              "value": "piggies_grooming",
+              "label": "Pigges Grooming"
+            },
+            {
+              "value": "bunnies_c_cages",
+              "label": "Bunnies Cages"
+            },
+            {
+              "value": "bunnies_f_linears",
+              "label": "Bunnies Fleece Linears"
+            },
+            {
+              "value": "bunnies_f_accessaries",
+              "label": "Bunnies Fleece Accessaries"
+            },
+            {
+              "value": "bunnies_food",
+              "label": "Bunnies Food"
+            },
+            {
+              "value": "bunnies_o_pen",
+              "label": "Bunnies Ourdoor Pen"
+            },
+            {
+              "value": "care_piggies",
+              "label": "Care Piggies"
+            },
+            {
+              "value": "care_bunnies",
+              "label": "Care Bunnies"
+            },
+            {
+              "value": "resource_vets",
+              "label": "Resource Vets"
+            },
+            {
+              "value": "resource_boarding",
+              "label": "Resource Boarding"
+            },
+            {
+              "value": "resource_rescue_list",
+              "label": "Resource Rescue List"
+            },
+            {
+              "value": "resource_care_sheet",
+              "label": "Resource Care Sheet"
+            },
+            {
+              "value": "resource_games",
+              "label": "Resource Games"
+            },
+            {
+              "value": "resource_videos",
+              "label": "Resource Videos"
+            },
+            {
+              "value": "krew_meet",
+              "label": "Krew Meet"
+            },
+            {
+              "value": "krew_story",
+              "label": "Krew Story"
+            },
+            {
+              "value": "krew_about",
+              "label": "Krew About"
+            },
+            {
+              "value": "christmas",
+              "label": "Christmas"
+            },
+            {
+              "value": "winter_wonderland",
+              "label": "Winter Wonderland"
+            },
+            {
+              "value": "cheery_christmas",
+              "label": "Cheery Christmas"
+            },
+            {
+              "value": "20_under",
+              "label": "Gifts under 20"
+            },
+            {
+              "value": "50_under",
+              "label": "Gifts under 50"
+            },
+            {
+              "value": "100_under",
+              "label": "Gifts under 100"
+            },
+            {
+              "value": "100_over",
+              "label": "Gifts over 100"
+            }
+          ],
+          "default": "none"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
